@@ -39,24 +39,24 @@ public:
         TOK_CHARACTER,
         TOK_CONTROL
     };
-
+// Category Code for sorting tokens
     enum CatCode {
-        CC_ESCAPE = 0,
-        CC_BGROUP = 1,
-        CC_EGROUP = 2,
-        CC_MATHSHIFT = 3,
-        CC_ALIGNTAB = 4,
-        CC_EOL = 5,
-        CC_PARAM = 6,
-        CC_SUPER = 7,
-        CC_SUB = 8,
-        CC_IGNORED = 9,
-        CC_SPACE = 10,
-        CC_LETTER = 11,
-        CC_OTHER = 12,
-        CC_ACTIVE = 13,
-        CC_COMMENT = 14,
-        CC_INVALID = 15,
+        CC_ESCAPE = 0,      // escape character "\"
+        CC_BGROUP = 1,      // Begin group: {
+        CC_EGROUP = 2,      // End group: }
+        CC_MATHSHIFT = 3,   // Math shift: $
+        CC_ALIGNTAB = 4,    // Alignment: &
+        CC_EOL = 5,         // End-of-line
+        CC_PARAM = 6,       // Parameter for macros: #
+        CC_SUPER = 7,       // Math superscript: ^
+        CC_SUB = 8,         // Math subscript: _
+        CC_IGNORED = 9,     // Ignored entirely
+        CC_SPACE = 10,      // Space
+        CC_LETTER = 11,     // Letters: the alphabet.
+        CC_OTHER = 12,      // 'Other' character - everything else: ., 1, :, etc.
+        CC_ACTIVE = 13,     // Active character - to be interpreted as control sequences: ~
+        CC_COMMENT = 14,    // Start-of-comment: %
+        CC_INVALID = 15,    // Invalid-in-input: [DEL]
         CC_NONE = 16
     };
 

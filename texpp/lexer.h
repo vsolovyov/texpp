@@ -68,11 +68,11 @@ protected:
 
 protected:
     enum State {
-        ST_EOF = 0,
-        ST_EOL = 1,
-        ST_NEW_LINE = 2,
-        ST_SKIP_SPACES = 3,
-        ST_MIDDLE = 4
+        ST_EOF = 0,         // end of file
+        ST_EOL = 1,         // end of line
+        ST_NEW_LINE = 2,    // new line
+        ST_SKIP_SPACES = 3, // skip spaces
+        ST_MIDDLE = 4       // middle of line
     };
 
     shared_ptr<std::istream> m_fileShared;
@@ -84,22 +84,22 @@ protected:
     string  m_lineTex;
 
     size_t  m_linePos;
-    size_t  m_lineNo;
-    size_t  m_charPos;
-    size_t  m_charEnd;
+    size_t  m_lineNo;   // number of line in whole document
+    size_t  m_charPos;  // actual position of next char in line
+    size_t  m_charEnd;  // position of the last char in line
 
     State   m_state;
     int     m_char;
-    Token::CatCode
-            m_catCode;
+    Token::CatCode m_catCode;
 
     int     m_endlinechar;
-    char    m_catcode[256];
+    // massive if enum CatCode values appropriate to (usigned int)varIn as index
+    char    m_catcode[256]; // TODO should be named a bit different as "Token::CatCode m_catCode" 2 line upper
 
     bool    m_interactive;
     bool    m_saveLines;
 
-    vector<string> m_lines;
+    vector<string> m_lines; // massive of document lines
 };
 
 } // namespace

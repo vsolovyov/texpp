@@ -110,10 +110,14 @@ class Parser
 public:
     enum Interaction { ERRORSTOPMODE, SCROLLMODE,
                        NONSTOPMODE, BATCHMODE };
+// list of modes for execution processor
     enum Mode { NULLMODE,
-                VERTICAL, HORIZONTAL,
-                RVERTICAL, RHORIZONTAL,
-                MATH, DMATH };
+                VERTICAL,   // vertical lists are broken into pages
+                HORIZONTAL, // horizontal lists are broken into paragraphs
+                RVERTICAL,
+                RHORIZONTAL,
+                MATH,       // formulas are built out of math lists
+                DMATH };
     enum GroupType { GROUP_DOCUMENT,
                      GROUP_NORMAL, GROUP_SUPER,
                      GROUP_MATH, GROUP_DMATH,
@@ -153,11 +157,18 @@ public:
 
     //////// Tokens
     Token::ptr lastToken();
+
+    // initialise all considered tokens to m_tokenSourse list
+    // return actual real (NO TOK_SKIPPED) token
     Token::ptr peekToken(bool expand = true);
-    Token::ptr nextToken(vector< Token::ptr >* tokens = NULL,
+
+    // insert tokens from m_tokenSource to tokenVector
+    // reset(clean) m_tokenSource and m_token
+    // return actual real (NO TOK_SKIPPED) token
+    Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
                          bool expand = true);
 
-    void pushBack(vector< Token::ptr >* tokens);
+    void pushBack(vector< Token::ptr >* tokenVector);
 
     //void setNoexpand(Token::ptr token) { m_noexpandToken = token; }
     void addNoexpand(Token::ptr token) { m_noexpandTokens.insert(token); }
@@ -218,10 +229,12 @@ public:
     Node::ptr parseTextWord();
     Node::ptr parseTextCharacter();
 
+    // set the HORIZONTAL mode and insert symbol to the to m_symbols table
     void processTextCharacter(char ch, Token::ptr token);
     void resetParagraphIndent();
 
     //////// Symbols
+    /// insert symbol to m_symbols table of symbols
     void setSymbol(const string& name, const any& value, bool global = false);
     void setSymbol(Token::ptr token, const any& value, bool global = false) {
         if(token && token->isControl())

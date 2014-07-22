@@ -697,13 +697,13 @@ Token::ptr Parser::rawNextToken(bool expand)
     return token;
 }
 
-Token::ptr Parser::nextToken(vector< Token::ptr >* tokens, bool expand)
+Token::ptr Parser::nextToken(vector< Token::ptr >* tokenVector, bool expand)
 {
     if(m_tokenSource.empty())
         peekToken(expand);
 
-    if(tokens) {
-        tokens->insert(tokens->end(),
+    if(tokenVector) {
+        tokenVector->insert(tokenVector->end(),
                 m_tokenSource.begin(), m_tokenSource.end());
     }
 
@@ -891,7 +891,7 @@ Token::ptr Parser::peekToken(bool expand)
     #endif
 }
 
-void Parser::pushBack(vector< Token::ptr >* tokens)
+void Parser::pushBack(vector< Token::ptr >* tokenVector)
 {
     std::copy(m_tokenSource.rbegin(), m_tokenSource.rend(),
                 std::front_inserter(m_tokenQueue));
@@ -899,8 +899,8 @@ void Parser::pushBack(vector< Token::ptr >* tokens)
     m_tokenSource.clear();
     m_token.reset();
 
-    if(tokens) {
-        std::copy(tokens->rbegin(), tokens->rend(),
+    if(tokenVector) {
+        std::copy(tokenVector->rbegin(), tokenVector->rend(),
                     std::front_inserter(m_tokenQueue));
     }
     // NOTE: lastToken is NOT changed
