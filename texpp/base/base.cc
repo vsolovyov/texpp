@@ -482,7 +482,7 @@ void initSymbols(Parser& parser)
     for(int i=0; i<256; ++i) {
         string n = boost::lexical_cast<string>(i);
 
-        parser.lexer()->setCatcode(i, Token::CC_OTHER);
+        parser.lexer()->assignCatCode(i, Token::CC_OTHER);
         parser.setSymbol("catcode"+n, int(Token::CC_OTHER));
         parser.setSymbol("sfcode"+n, int(1000));
 
@@ -493,7 +493,7 @@ void initSymbols(Parser& parser)
     for(int i='a'; i<='z'; ++i) {
         string n = boost::lexical_cast<string>(i);
 
-        parser.lexer()->setCatcode(i, Token::CC_LETTER);
+        parser.lexer()->assignCatCode(i, Token::CC_LETTER);
         parser.setSymbol("catcode"+n, int(Token::CC_LETTER));
 
         parser.setSymbol("lccode"+n, int(i));
@@ -504,7 +504,7 @@ void initSymbols(Parser& parser)
     for(int i='A'; i<='Z'; ++i) {
         string n = boost::lexical_cast<string>(i);
 
-        parser.lexer()->setCatcode(i, Token::CC_LETTER);
+        parser.lexer()->assignCatCode(i, Token::CC_LETTER);
         parser.setSymbol("catcode"+n, int(Token::CC_LETTER));
 
         parser.setSymbol("sfcode"+n, int(999));
@@ -518,15 +518,15 @@ void initSymbols(Parser& parser)
         parser.setSymbol("mathcode"+n, int(0x7000 + i));
     }
 
-    parser.lexer()->setCatcode(0x7f,   Token::CC_INVALID);
+    parser.lexer()->assignCatCode(0x7f,   Token::CC_INVALID);
     parser.setSymbol("catcode127", int(Token::CC_INVALID));
-    parser.lexer()->setCatcode('\\',   Token::CC_ESCAPE);
+    parser.lexer()->assignCatCode('\\',   Token::CC_ESCAPE);
     parser.setSymbol("catcode92",  int(Token::CC_ESCAPE));
-    parser.lexer()->setCatcode('\r',   Token::CC_EOL);
+    parser.lexer()->assignCatCode('\r',   Token::CC_EOL);
     parser.setSymbol("catcode13",  int(Token::CC_EOL));
-    parser.lexer()->setCatcode(' ',    Token::CC_SPACE);
+    parser.lexer()->assignCatCode(' ',    Token::CC_SPACE);
     parser.setSymbol("catcode32",  int(Token::CC_SPACE));
-    parser.lexer()->setCatcode('%',    Token::CC_COMMENT);
+    parser.lexer()->assignCatCode('%',    Token::CC_COMMENT);
     parser.setSymbol("catcode37",  int(Token::CC_COMMENT));
 
     parser.setSymbol("delcode96", int(0));

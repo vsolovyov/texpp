@@ -152,7 +152,7 @@ bool Read::invokeWithPrefixes(Parser& parser, shared_ptr<Node> node,
     // prepare the lexer
     lexer->setEndlinechar(parser.lexer()->endlinechar());
     for(int n=0; n<256; ++n) {
-        lexer->setCatcode(n, parser.lexer()->catcode(n));
+        lexer->assignCatCode(n, parser.lexer()->getCatCode(n));
     }
 
     // read the tokens
@@ -179,7 +179,7 @@ bool Read::invokeWithPrefixes(Parser& parser, shared_ptr<Node> node,
         // end of file
         int endlinechar = lexer->endlinechar();
         if(endlinechar >= 0 && endlinechar <= 255) {
-            int cc = lexer->catcode(endlinechar);
+            int cc = lexer->getCatCode(endlinechar);
             if(cc == Token::CC_EOL)
                 tokens->push_back(Token::create(
                     Token::TOK_CONTROL, Token::CC_ESCAPE, "\\par"));

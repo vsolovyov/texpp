@@ -54,8 +54,8 @@ public:
     int endlinechar() const { return m_endlinechar; }
     void setEndlinechar(int endlinechar) { m_endlinechar = endlinechar; }
 
-    int catcode(int ch) const { return m_catcode[ch]; }
-    void setCatcode(int ch, int code) { m_catcode[ch] = code; }
+    int getCatCode(int ch) const { return m_catCodeTable[ch]; }
+    void assignCatCode(int ch, int code) { m_catCodeTable[ch] = code; }
 
 protected:
     void init();
@@ -93,8 +93,7 @@ protected:
     Token::CatCode m_catCode;
 
     int     m_endlinechar;
-    // massive if enum CatCode values appropriate to (usigned int)varIn as index
-    char    m_catcode[256]; // TODO should be named a bit different as "Token::CatCode m_catCode" 2 line upper
+    short int     m_catCodeTable[256];  // character-code–category-code pairs <char, int>
 
     bool    m_interactive;
     bool    m_saveLines;

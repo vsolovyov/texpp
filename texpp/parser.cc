@@ -326,7 +326,7 @@ void Parser::setSpecialSymbol(const string& name, const any& value)
             std::istringstream s(name.substr(7));
             int n = 0; s >> n;
             if(!s.fail() && n >= 0 && n <= 255) {
-                m_lexer->setCatcode(n, *unsafe_any_cast<int>(&value));
+                m_lexer->assignCatCode(n, *unsafe_any_cast<int>(&value));
             }
         }
     }
@@ -853,6 +853,7 @@ Token::ptr Parser::peekToken(bool expand)
     }
     */
 
+    // erasing m_tokenSource and m_token
     pushBack(NULL); // peekToken may be called recursively
 
     m_token = mtoken;
@@ -931,7 +932,7 @@ void Parser::input(const string& fileName, const string& fullName)
     shared_ptr<Lexer> lexer(new Lexer(fullName, istream, false, true));
     lexer->setEndlinechar(m_lexer->endlinechar());
     for(int n=0; n<256; ++n) {
-        lexer->setCatcode(n, m_lexer->catcode(n));
+        lexer->assignCatCode(n, m_lexer->getCatCode(n));
     }
 
     m_lexer = lexer;

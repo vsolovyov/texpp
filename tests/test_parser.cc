@@ -238,8 +238,8 @@ BOOST_AUTO_TEST_CASE( parser_symbols )
 BOOST_AUTO_TEST_CASE( parser_parse )
 {
     shared_ptr<Parser> parser = create_parser("abc{def}gh");
-    parser->lexer()->setCatcode('{', Token::CC_BGROUP);
-    parser->lexer()->setCatcode('}', Token::CC_EGROUP);
+    parser->lexer()->assignCatCode('{', Token::CC_BGROUP);
+    parser->lexer()->assignCatCode('}', Token::CC_EGROUP);
     
     Node::ptr document = parser->parse();
     //std::cout << document->treeRepr();

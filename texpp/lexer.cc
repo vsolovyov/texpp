@@ -54,19 +54,19 @@ void Lexer::init()
 {
     m_endlinechar = '\r';
     for(int i=0; i<256; ++i)
-        m_catcode[i] = Token::CC_OTHER;
+        assignCatCode(i,Token::CC_OTHER);
 
     for(int i='a'; i<='z'; ++i)
-        m_catcode[i] = Token::CC_LETTER;
+        assignCatCode(i,Token::CC_LETTER);
 
     for(int i='A'; i<='Z'; ++i)
-        m_catcode[i] = Token::CC_LETTER;
+        assignCatCode(i,Token::CC_LETTER);
 
-    m_catcode[0x7f] = Token::CC_INVALID;
-    m_catcode['\\'] = Token::CC_ESCAPE;
-    m_catcode['\r'] = Token::CC_EOL;
-    m_catcode[' '] = Token::CC_SPACE;
-    m_catcode['%'] = Token::CC_COMMENT;
+    assignCatCode(0x7f,Token::CC_INVALID);
+    assignCatCode('\\',Token::CC_ESCAPE);
+    assignCatCode('\r',Token::CC_EOL);
+    assignCatCode(' ',Token::CC_SPACE);
+    assignCatCode('%',Token::CC_COMMENT);
 }
 
 string Lexer::jobName() const
@@ -156,7 +156,7 @@ bool Lexer::nextChar()
     }
 
     m_char = m_lineTex[m_charPos];
-    m_catCode = Token::CatCode(m_catcode[(unsigned char) m_char]);  // analysing what kind of symbol
+    m_catCode = Token::CatCode(getCatCode( m_char)); // analysing what kind of symbol
 
     if(m_catCode == Token::CC_SUPER && m_charPos+2 < m_lineTex.size() &&
                                     m_lineTex[m_charPos+1] == m_char) {
@@ -174,7 +174,7 @@ bool Lexer::nextChar()
             m_char = (m_lineTex[m_charPos+2] + 64) & 0x7f;
             m_charEnd = m_charPos+3;
         }
-        m_catCode = Token::CatCode(m_catcode[(unsigned char) m_char]);
+        m_catCode = Token::CatCode(getCatCode(m_char));
     } else {
         m_charEnd = m_charPos + 1;
     }

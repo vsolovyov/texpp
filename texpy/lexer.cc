@@ -49,8 +49,8 @@ void export_lexer()
         .def("lineNo", &Lexer::lineNo)
         .def("endlinechar", &Lexer::endlinechar)
         .def("setEndlinechar", &Lexer::setEndlinechar)
-        .def("catcode", &Lexer::catcode)
-        .def("setCatcode", &Lexer::setCatcode)
+        .def("catcode", &Lexer::getCatCode)
+        .def("setCatcode", &Lexer::assignCatCode)
         ;
 }
 

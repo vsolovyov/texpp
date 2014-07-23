@@ -168,10 +168,13 @@ public:
     Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
                          bool expand = true);
 
+    // insert tokens from m_tokenSource to tokenVector
+    // clean up m_tokenSource and m_token
     void pushBack(vector< Token::ptr >* tokenVector);
 
-    //void setNoexpand(Token::ptr token) { m_noexpandToken = token; }
+    // void setNoexpand(Token::ptr token) { m_noexpandToken = token; }
     void addNoexpand(Token::ptr token) { m_noexpandTokens.insert(token); }
+
     void resetNoexpand() { m_noexpandTokens.clear(); pushBack(NULL); }
 
     void input(const string& fileName, const string& fullName);

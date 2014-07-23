@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( lexer_eol )
 {
     {
     shared_ptr<Lexer> lexer = create_lexer("a\rb\nc\r\nd\n\re");
-    lexer->setCatcode('\r', Token::CC_OTHER);
+    lexer->assignCatCode('\r', Token::CC_OTHER);
     Token tokens[] = {
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 0, 1),
         Token(Token::TOK_CHARACTER, Token::CC_OTHER, "\r", "\r", 0, 1, 1, 2),
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE( lexer_eol )
 
     {
     shared_ptr<Lexer> lexer = create_lexer("a\rb\nc\r\nd\n\re");
-    lexer->setCatcode('c', Token::CC_EOL);
+    lexer->assignCatCode('c', Token::CC_EOL);
     Token tokens[] = {
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 0, 1),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", "\r", 0, 1, 1, 2),
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( lexer_special_chars )
                 "^^\\\\^^7a\n"           // escape character
                 "^^"                     // ^^ at the end of file
     );
-    lexer->setCatcode('^', Token::CC_SUPER);
+    lexer->assignCatCode('^', Token::CC_SUPER);
     Token tokens[] = {
         Token(Token::TOK_CHARACTER, Token::CC_SUPER, "^", "^", 0, 1, 0, 1),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", " ", 0, 1, 1, 2),
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE( lexer_special_chars )
     shared_ptr<Lexer> lexer = create_lexer(
         "^^\n"  // should not be replaced
     );
-    lexer->setCatcode('^', Token::CC_SUPER);
+    lexer->assignCatCode('^', Token::CC_SUPER);
     lexer->setEndlinechar(-1);
     Token tokens[] = {
         Token(Token::TOK_CHARACTER, Token::CC_SUPER, "^", "^", 0, 1, 0, 1),
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE( lexer_control )
     {
     shared_ptr<Lexer> lexer = create_lexer(
         "\\abc  \\abc \\abc:\\abc\\a \\; \\\\ \\  \\~~ \\");
-    lexer->setCatcode('~', Token::CC_ACTIVE);
+    lexer->assignCatCode('~', Token::CC_ACTIVE);
     Token tokens[] = {
         Token(Token::TOK_CONTROL, Token::CC_ESCAPE, "\\abc", "\\abc", 0, 1, 0, 4),
         Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", "  ", 0, 1, 4, 6),
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE( lexer_comment )
 {
     {
     shared_ptr<Lexer> lexer = create_lexer(" abc\\%de%fg\\hk\nl");
-    lexer->setCatcode(0, Token::CC_IGNORED);
+    lexer->assignCatCode(0, Token::CC_IGNORED);
     Token tokens[] = {
         Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", " ", 0, 1, 0, 1),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 1, 2),
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE( lexer_other )
 {
     {
     shared_ptr<Lexer> lexer = create_lexer(string("  a\x00zc%def", 10));
-    lexer->setCatcode(0, Token::CC_IGNORED);
+    lexer->assignCatCode(0, Token::CC_IGNORED);
     Token tokens[] = {
         Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", "  ", 0, 1, 0, 2),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 2, 3),
