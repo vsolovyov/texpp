@@ -131,7 +131,7 @@ bool Lexer::nextLine()
 
     // Discard spaces at the end
     size_t end = m_lineOrig.find_last_not_of(" \r\n");
-    if(end == string::npos) end = -1;   // TODO Bereziuk meniningless expression?
+    if(end == string::npos) end = -1;   // NOTE: Bereziuk meniningless expression?
 
     m_lineTex.reserve(end+2);
     m_lineTex.assign(m_lineOrig, 0, end+1);
@@ -156,7 +156,7 @@ bool Lexer::nextChar()
     }
 
     m_char = m_lineTex[m_charPos];
-    m_catCode = Token::CatCode(getCatCode( m_char)); // analysing what kind of symbol
+    m_catCode = Token::CatCode(getCatCode(m_char)); // analysing what kind of symbol
 
     if(m_catCode == Token::CC_SUPER && m_charPos+2 < m_lineTex.size() &&
                                     m_lineTex[m_charPos+1] == m_char) {
@@ -207,7 +207,7 @@ Token::ptr Lexer::nextToken()
         return Token::ptr();
 
     while(true) {
-        if(!nextChar())     // change state if end of line
+        if(!nextChar())             // change state if end of line
             m_state = ST_EOL;
 
         /////////// Handle ST_EOL
@@ -217,7 +217,7 @@ Token::ptr Lexer::nextToken()
                 return newToken(Token::TOK_SKIPPED);
             }
 
-            if(!nextLine()) {
+            if(!nextLine()) {       // read next line
                 m_state = ST_EOF;
                 return Token::ptr();
             }

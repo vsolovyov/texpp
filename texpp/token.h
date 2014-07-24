@@ -150,13 +150,13 @@ public:
 
 protected:
     Type        m_type;
-    CatCode     m_catCode;
-    string      m_value;
-    string      m_source;
+    CatCode     m_catCode;  // category code whitch token refer to
+    string      m_value;    // described expression meaning (semantic)
+    string      m_source;   // described expression
 
     size_t      m_linePos;
-    size_t      m_lineNo;
-    size_t      m_charPos;
+    size_t      m_lineNo;   // line number (in source file)
+    size_t      m_charPos;  // current processing point in line
     size_t      m_charEnd;
 
     bool        m_lastInLine;

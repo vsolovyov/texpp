@@ -817,7 +817,6 @@ Token::ptr Parser::peekToken(bool expand)
             m_logger->log(Logger::ERROR,
                 "Text line contains an invalid character", *this, token);
         }
-        
         tokenSource.push_back(token);
     }
 
@@ -852,6 +851,7 @@ Token::ptr Parser::peekToken(bool expand)
         }
     }
     */
+
 
     // erasing m_tokenSource and m_token
     pushBack(NULL); // peekToken may be called recursively
@@ -2277,7 +2277,6 @@ Node::ptr Parser::parseGroup(GroupType groupType)
             endGroup();
 
         } else if(helperIsImplicitCharacter(Token::CC_MATHSHIFT)) {
-
             if(groupType == GROUP_MATH) {
                 node->appendChild("group_end", parseToken());
                 break;

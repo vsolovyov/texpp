@@ -66,8 +66,11 @@ public:
     void setType(const string& type) { m_type = type; }
 
     void setValue(const any& value) { m_value = value; }
+
     const any& valueAny() const { return m_value; }
-    template<typename T> T value(T def) const {
+
+    template<typename T>
+    T value(T def) const {
         if(m_value.type() != typeid(T)) return def;
         else return *unsafe_any_cast<T>(&m_value);
     }
@@ -88,6 +91,11 @@ public:
     Node::ptr child(int num) { return m_children[num].second; }
     Node::ptr child(const string& name);
 
+    /**
+     * @brief append node to m_children list with tag "name"
+     * @param name - tag of node
+     * @param node
+     */
     void appendChild(const string& name, Node::ptr node) {
         m_children.push_back(make_pair(name, node));
     }
@@ -158,18 +166,30 @@ public:
     //////// Tokens
     Token::ptr lastToken();
 
-    // initialise all considered tokens to m_tokenSourse list
-    // return actual real (NO TOK_SKIPPED) token
+    //
+    // return actual real (no TOK_SKIPPED) token
+    /**
+     * @brief read and put all next tokens to m_tokenSourse list untill NoSkipped token
+     * @param expand
+     * @return next real(no skipped) token
+     */
     Token::ptr peekToken(bool expand = true);
 
-    // insert tokens from m_tokenSource to tokenVector
-    // reset(clean) m_tokenSource and m_token
-    // return actual real (NO TOK_SKIPPED) token
+    /**
+     * @brief insert tokens from m_tokenSource to tokenVector
+     * clean m_tokenSource and m_token
+     * @param expand
+     * @return actual real (no TOK_SKIPPED) token
+     */
     Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
                          bool expand = true);
 
     // insert tokens from m_tokenSource to tokenVector
-    // clean up m_tokenSource and m_token
+    //
+    /**
+     * @brief insert tokens from m_tokenSource to tokenVector
+     * clean m_tokenSource and m_token
+     */
     void pushBack(vector< Token::ptr >* tokenVector);
 
     // void setNoexpand(Token::ptr token) { m_noexpandToken = token; }
@@ -229,15 +249,23 @@ public:
 
     Node::ptr parseFileName();
 
+    /**
+     * @brief read word untill non letter symbol
+     * @return node with the word inside
+     */
     Node::ptr parseTextWord();
     Node::ptr parseTextCharacter();
 
-    // set the HORIZONTAL mode and insert symbol to the to m_symbols table
+    /**
+     * @brief set the HORIZONTAL mode. Insert "ch" to the to m_symbols table
+     * @param ch - symbol
+     * @param token
+     */
     void processTextCharacter(char ch, Token::ptr token);
     void resetParagraphIndent();
 
     //////// Symbols
-    /// insert symbol to m_symbols table of symbols
+    /// insert symbol to m_symbols SymbolTable
     void setSymbol(const string& name, const any& value, bool global = false);
     void setSymbol(Token::ptr token, const any& value, bool global = false) {
         if(token && token->isControl())
@@ -294,6 +322,8 @@ public:
 protected:
     void endinputNow();
     Node::ptr rawExpandToken(Token::ptr token);
+
+    // read and return next token be it skipped or no
     Token::ptr rawNextToken(bool expand = true);
     Node::ptr parseFalseConditional(size_t level,
                           bool sElse = false, bool sOr = false);
@@ -356,7 +386,7 @@ protected:
     SymbolStack     m_symbolsStack;
     vector<size_t>  m_symbolsStackLevels;
 
-    size_t          m_lineNo;
+    size_t          m_lineNo;   // current linie in file
     Mode            m_mode;
     Mode            m_prevMode;
 

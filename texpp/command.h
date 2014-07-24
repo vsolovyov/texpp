@@ -53,6 +53,7 @@ protected:
     string m_name;
 };
 
+// \par
 class TokenCommand: public Command
 {
 public:

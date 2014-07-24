@@ -38,6 +38,7 @@ public:
                 bool interactive = false, bool saveLines = false);
     ~Lexer();
 
+    // return next Token from tex
     Token::ptr nextToken();
 
     bool interactive() const { return m_interactive; }
@@ -77,28 +78,28 @@ protected:
 
     shared_ptr<std::istream> m_fileShared;
 
-    std::istream*   m_file;
+    std::istream*   m_file;     // .tex file source
     shared_ptr<string> m_fileName;
 
-    string  m_lineOrig;
+    string  m_lineOrig; // current line
     string  m_lineTex;
 
     size_t  m_linePos;
-    size_t  m_lineNo;   // number of line in whole document
+    size_t  m_lineNo;   // current line number
     size_t  m_charPos;  // actual position of next char in line
     size_t  m_charEnd;  // position of the last char in line
 
-    State   m_state;
+    State   m_state;    // processing state
     int     m_char;
     Token::CatCode m_catCode;
 
     int     m_endlinechar;
-    short int     m_catCodeTable[256];  // character-code–category-code pairs <char, int>
+    short int     m_catCodeTable[256];  // character-code–category-code pairs <char, CatCode>
 
     bool    m_interactive;
     bool    m_saveLines;
 
-    vector<string> m_lines; // massive of document lines
+    vector<string> m_lines; // massive of already cinsidered text lines
 };
 
 } // namespace
