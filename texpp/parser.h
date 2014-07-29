@@ -166,26 +166,19 @@ public:
     //////// Tokens
     Token::ptr lastToken();
 
-    //
-    // return actual real (no TOK_SKIPPED) token
     /**
-     * @brief read and put all next tokens to m_tokenSourse list untill NoSkipped token
-     * @param expand
-     * @return next real(no skipped) token
+     * @brief   read and put all next tokens to m_tokenSourse list untill NoSkipped token
+     * @return  next real(no skipped) token
      */
     Token::ptr peekToken(bool expand = true);
-
     /**
-     * @brief insert tokens from m_tokenSource to tokenVector
-     * clean m_tokenSource and m_token
-     * @param expand
-     * @return actual real (no TOK_SKIPPED) token
+     * @brief   insert tokens from m_tokenSource into argument tokenVector,
+     *          update m_lineNo
+     *          clean m_tokenSource and m_token
+     * @return  actual real (no TOK_SKIPPED) token
      */
     Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
                          bool expand = true);
-
-    // insert tokens from m_tokenSource to tokenVector
-    //
     /**
      * @brief insert tokens from m_tokenSource to tokenVector
      * clean m_tokenSource and m_token
@@ -254,6 +247,7 @@ public:
      * @return node with the word inside
      */
     Node::ptr parseTextWord();
+
     Node::ptr parseTextCharacter();
 
     /**
@@ -265,8 +259,20 @@ public:
     void resetParagraphIndent();
 
     //////// Symbols
-    /// insert symbol to m_symbols SymbolTable
+    /**
+     * @brief insert <value> to m_symbols table with tag <name>
+     * @param name - tag for value
+     * @param value - value to be inserted to m_symbols table
+     * @param global
+     */
     void setSymbol(const string& name, const any& value, bool global = false);
+
+    /**
+     * @brief setSymbol insert <value> to m_symbols table with tag-(tok semantic)
+     * @param token - source of tag
+     * @param value - value to be inserted to m_symbols table
+     * @param global
+     */
     void setSymbol(Token::ptr token, const any& value, bool global = false) {
         if(token && token->isControl())
             setSymbol(token->value(), value, global);
@@ -322,8 +328,10 @@ public:
 protected:
     void endinputNow();
     Node::ptr rawExpandToken(Token::ptr token);
-
-    // read and return next token be it skipped or no
+    /**
+     * @brief read and return next token be it skipped or no
+     * @return next token
+     */
     Token::ptr rawNextToken(bool expand = true);
     Node::ptr parseFalseConditional(size_t level,
                           bool sElse = false, bool sOr = false);
@@ -352,7 +360,7 @@ protected:
     shared_ptr<Lexer>   m_lexer;
     shared_ptr<Logger>  m_logger;
 
-    Token::ptr      m_token;
+    Token::ptr      m_token;    // current token (in process)
     Token::list     m_tokenSource;
 
     Token::ptr      m_lastToken;

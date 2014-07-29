@@ -35,10 +35,12 @@ public:
     typedef shared_ptr<list> list_ptr;
 
     enum Type {
-        TOK_SKIPPED,
-        TOK_CHARACTER,
-        TOK_CONTROL
+        TOK_SKIPPED,    // coments(%...), spaces,
+        TOK_CHARACTER,  // letters,\n,\r,{,},
+        TOK_CONTROL     // \par, \def, \usepakage
+                        // \draft,\documentclass,\setcitestyle
     };
+
 // Category Code for sorting tokens
     enum CatCode {
         CC_ESCAPE = 0,      // escape character "\"
@@ -149,17 +151,17 @@ public:
             Parser* parser = NULL, bool param = false, size_t limit = 0);
 
 protected:
-    Type        m_type;
+    Type        m_type;     // type of token
     CatCode     m_catCode;  // category code whitch token refer to
     string      m_value;    // described expression meaning (semantic)
     string      m_source;   // described expression
 
-    size_t      m_linePos;
+    size_t      m_linePos;  // total number of symbols above current line
     size_t      m_lineNo;   // line number (in source file)
-    size_t      m_charPos;  // current processing point in line
-    size_t      m_charEnd;
+    size_t      m_charPos;  // position of teken`s begin (on current line)
+    size_t      m_charEnd;  // position of teken`s end (on current line)
 
-    bool        m_lastInLine;
+    bool        m_lastInLine;   // ID: this is the last Token in the line
 
     shared_ptr<string> m_fileName;
 

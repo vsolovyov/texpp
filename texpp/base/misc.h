@@ -54,6 +54,9 @@ public:
     bool invoke(Parser& parser, shared_ptr<Node> node);
 };
 
+/**
+ * @brief The Par class relate to /par command - paragraph
+ */
 class Par: public Command
 {
 public:

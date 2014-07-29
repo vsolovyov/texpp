@@ -111,6 +111,8 @@ bool RegisterDef<Cmd>::invokeWithPrefixes(Parser& parser,
     return m_group->createDef(parser, ltoken, num, global);
 }
 
+/** @brief relate to \def command - declare macro define
+ */
 class Def: public Assignment
 {
 public:

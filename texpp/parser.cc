@@ -708,6 +708,7 @@ Token::ptr Parser::nextToken(vector< Token::ptr >* tokenVector, bool expand)
     }
 
     Token::ptr token = m_token;
+    // update m_lineNo
     if(!m_lexer->interactive() && m_lexer->lineNo() != m_lineNo) {
         m_lineNo = m_lexer->lineNo();
         setSymbol("inputlineno", int(m_lineNo), true);
@@ -851,7 +852,6 @@ Token::ptr Parser::peekToken(bool expand)
         }
     }
     */
-
 
     // erasing m_tokenSource and m_token
     pushBack(NULL); // peekToken may be called recursively
@@ -1173,6 +1173,7 @@ Node::ptr Parser::parseControlSequence(bool expand)
 
 Node::ptr Parser::parseTextCharacter()
 {
+    // TODO Bereziuk: function peekToken() is called very often (6 times)
     Node::ptr node(new Node(peekToken() &&
         peekToken()->isCharacterCat(Token::CC_SPACE) ?
         "text_space" : "text_character" ));
@@ -2388,7 +2389,7 @@ Node::ptr Parser::parseGroup(GroupType groupType)
                             node->appendChild("extra_endgroup", parseToken());
                         }
                     }
-                } else {
+                } else {    // nor Begingroup nor Endgroup
                     Mode prevMode = mode();
                     cmd->presetMode(*this);
                     if(mode() != prevMode)
@@ -2427,6 +2428,7 @@ Node::ptr Parser::parseGroup(GroupType groupType)
                 //                                parseToken());
             }
         } else {
+            // add parsed token to node-tree
             node->appendChild("other_token", parseToken());
         }
     }

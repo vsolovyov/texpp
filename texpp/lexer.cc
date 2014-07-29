@@ -144,18 +144,21 @@ bool Lexer::nextLine()
     ++m_lineNo;
     return true;
 }
-
+/** read next symbol from m_lineTex following the m_charEnd.
+ *  Determines catCode for this symbol.
+ * @return
+ */
 bool Lexer::nextChar()
 {
-    m_charPos = m_charEnd;
+    m_charPos = m_charEnd;      // TODO Bereziuk move it to following if()
 
-    if(m_charPos >= m_lineTex.size()) {
+    if(m_charPos >= m_lineTex.size()) { // end of line
         m_char = -1;
         m_catCode = Token::CC_EOL;
         return false;
     }
 
-    m_char = m_lineTex[m_charPos];
+    m_char = m_lineTex[m_charPos];      // m_char - next character
     m_catCode = Token::CatCode(getCatCode(m_char)); // analysing what kind of symbol
 
     if(m_catCode == Token::CC_SUPER && m_charPos+2 < m_lineTex.size() &&
@@ -207,7 +210,7 @@ Token::ptr Lexer::nextToken()
         return Token::ptr();
 
     while(true) {
-        if(!nextChar())             // change state if end of line
+        if(!nextChar())             // read next symbol
             m_state = ST_EOL;
 
         /////////// Handle ST_EOL
@@ -216,7 +219,7 @@ Token::ptr Lexer::nextToken()
                 m_charEnd = m_lineOrig.size();
                 return newToken(Token::TOK_SKIPPED);
             }
-
+            // TODO Berziuk refactofing with nextLine
             if(!nextLine()) {       // read next line
                 m_state = ST_EOF;
                 return Token::ptr();
