@@ -479,6 +479,7 @@ void initSymbols(Parser& parser)
     __TEXPP_SET_COMMAND("splitbotmark", UnimplementedCommand);
 
     // INITEX context
+    // init lookup table. Category code for every every one of 256 values
     for(int i=0; i<256; ++i) {
         string n = boost::lexical_cast<string>(i);
 
@@ -518,27 +519,29 @@ void initSymbols(Parser& parser)
         parser.setSymbol("mathcode"+n, int(0x7000 + i));
     }
 
-    parser.lexer()->assignCatCode(0x7f,   Token::CC_INVALID);
+    parser.lexer()->assignCatCode(0x7f,   Token::CC_INVALID);   // set invalid symbol
     parser.setSymbol("catcode127", int(Token::CC_INVALID));
-    parser.lexer()->assignCatCode('\\',   Token::CC_ESCAPE);
+    parser.lexer()->assignCatCode('\\',   Token::CC_ESCAPE);    // set "begin command" symbol '\\'
     parser.setSymbol("catcode92",  int(Token::CC_ESCAPE));
-    parser.lexer()->assignCatCode('\r',   Token::CC_EOL);
+    parser.lexer()->assignCatCode('\r',   Token::CC_EOL);       // set end of line symbol '\r'
     parser.setSymbol("catcode13",  int(Token::CC_EOL));
-    parser.lexer()->assignCatCode(' ',    Token::CC_SPACE);
+    parser.lexer()->assignCatCode(' ',    Token::CC_SPACE);     // set space symbol ' '
     parser.setSymbol("catcode32",  int(Token::CC_SPACE));
-    parser.lexer()->assignCatCode('%',    Token::CC_COMMENT);
+    parser.lexer()->assignCatCode('%',    Token::CC_COMMENT);   // set comment symbil '%'
     parser.setSymbol("catcode37",  int(Token::CC_COMMENT));
 
     parser.setSymbol("delcode96", int(0));
 
-    parser.lexer()->setEndlinechar('\r');
+    parser.lexer()->setEndlinechar('\r');       // set delimiter for the end of text line
     parser.setSymbol("endlinechar", int('\r'));
 
     parser.setSymbol("escapechar", int('\\'));
+    // QUESTION what the sence of this magic numbers?
     parser.setSymbol("tolerance", int(10000));
     parser.setSymbol("mag", int(1000));
     parser.setSymbol("maxdeadcycles", int(25));
 
+    // set time stamp of initialisation
     std::time_t t; std::time(&t);
     std::tm* time = std::localtime(&t);
     parser.setSymbol("year", int(1900+time->tm_year));

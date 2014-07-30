@@ -69,6 +69,9 @@ public:
 
     const any& valueAny() const { return m_value; }
 
+    /** return def       if types of def and m_value is different
+     *  return m_value   if types of def and m_value is equal
+     */
     template<typename T>
     T value(T def) const {
         if(m_value.type() != typeid(T)) return def;
@@ -261,17 +264,14 @@ public:
     //////// Symbols
     /**
      * @brief insert <value> to m_symbols table with tag <name>
-     * @param name - tag for value
+     * @param name - tag for <value>
      * @param value - value to be inserted to m_symbols table
-     * @param global
      */
     void setSymbol(const string& name, const any& value, bool global = false);
 
-    /**
-     * @brief setSymbol insert <value> to m_symbols table with tag-(tok semantic)
-     * @param token - source of tag
-     * @param value - value to be inserted to m_symbols table
-     * @param global
+    /** @brief insert <value> to m_symbols table with tag moved from token
+     *  @param token - source for tag. tag is token semantic
+     *  @param value - value to be inserted to m_symbols table
      */
     void setSymbol(Token::ptr token, const any& value, bool global = false) {
         if(token && token->isControl())
@@ -336,6 +336,9 @@ protected:
     Node::ptr parseFalseConditional(size_t level,
                           bool sElse = false, bool sOr = false);
     void setSpecialSymbol(const string& name, const any& value);
+
+    /** data initialising of parser whitch are necessary for plane text parsing
+     */
     void init();
 
     typedef std::deque<

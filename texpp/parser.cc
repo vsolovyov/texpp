@@ -237,6 +237,7 @@ Parser::Parser(const string& fileName, std::istream* file,
       m_interaction(ERRORSTOPMODE)
 {
     m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, interactive, true));
+
     init();
 }
 
@@ -265,14 +266,15 @@ void Parser::init()
     base::initSymbols(*this);
     
     string banner = BANNER;
-    if(!lexer()->interactive()) {
-        char t[256];
+    if(!lexer()->interactive()) {   // if we not if the interactive console mode
+        char t[256];    // buffer
         time_t tt = std::time(NULL);
         std::strftime(t, sizeof(t), " %e %b %Y %H:%M", std::localtime(&tt));
         string ts(t);
         boost::algorithm::to_upper(ts);
-        banner += ts;
+        banner += ts;           // add time to banner
     }
+    // write info in banner to console
     m_logger->log(Logger::WRITE, banner, *this, Token::ptr());
 }
 
@@ -472,17 +474,19 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
 
     Node::ptr node(new Node("macro"));
     Node::ptr child(new Node("control_token"));
-    child->tokens().push_back(token);
-    child->setValue(token);
-    node->appendChild("control_sequence", child);
+    child->tokens().push_back(token);   // push token to child node tokens vector
+    child->setValue(token);             // init child node m_value by token
+    node->appendChild("control_sequence", child);   // add chind to node
     bool expanded = true;
     
-    pushBack(NULL);
+    pushBack(NULL);             // clean m_tokenSource and m_token
 
+    // QUESTION: I do not understand nor coditional nor traceCommand
+    // usualy traceCommand command do nothing
     if(m_conditionals.empty() || m_conditionals.back().active)
         traceCommand(token, true);
 
-    if(!cmd) {
+    if(!cmd) {      // if didn`t find this command in m_symbols table
         logger()->log(Logger::ERROR,
             "Undefined control sequence", *this, token);
         /*token = Token::create(Token::TOK_SKIPPED,
@@ -493,7 +497,7 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
         //token = token->lcopy();
         //token->setType(Token::TOK_SKIPPED);
         //node->setValue(Token::list(1, token));
-        node->setType("undefined_control_sequence");
+        node->setType("undefined_control_sequence"); // set type for node
 
     } else if(dynamic_pointer_cast<ConditionalBegin>(macro)) {
         ConditionalBegin::ptr condBegin =
@@ -660,9 +664,9 @@ Token::ptr Parser::rawNextToken(bool expand)
                 continue;
             }
 
-            token = m_lexer->nextToken();
-            if(token && !token->isSkipped())
-                m_lastToken = token;
+            token = m_lexer->nextToken();   // read next token
+            if(token && !token->isSkipped())// if token is not skipped
+                m_lastToken = token;        // remember token
 
             if(!m_inputStack.empty()) {
                 if(!token) {
@@ -814,11 +818,11 @@ Token::ptr Parser::peekToken(bool expand)
     Token::ptr token;
     Token::list tokenSource;
     while((token = rawNextToken(expand)) && token->isSkipped()) {
-        if(token->catCode() == Token::CC_INVALID) {
-            m_logger->log(Logger::ERROR,
+        if(token->catCode() == Token::CC_INVALID) { // if token is invalid
+            m_logger->log(Logger::ERROR,            // write error to log
                 "Text line contains an invalid character", *this, token);
         }
-        tokenSource.push_back(token);
+        tokenSource.push_back(token);  // push all skipped tokens to tokenSource
     }
 
     // real token
@@ -2221,8 +2225,10 @@ Node::ptr Parser::parseGroup(GroupType groupType)
         node->appendChild("group_begin", parseDMathToken());
     }
 
+    // main parsing loop
     while(true) {
-        if(!peekToken()) {
+        if(!peekToken()) {      // get next no skipped token
+            // if we inside formula $...$
             if(groupType == GROUP_MATH || groupType == GROUP_DMATH) {
                 Node::ptr group_end(new Node("group_end"));
                 Token::ptr t(Token::create(Token::TOK_CHARACTER,
@@ -2439,6 +2445,7 @@ Node::ptr Parser::parseGroup(GroupType groupType)
 
 Node::ptr Parser::parse()
 {
+    // print name of source file
     if(!lexer()->fileName().empty()) {
         string fname = lexer()->fileName();
         logger()->log(Logger::MESSAGE,
@@ -2449,7 +2456,8 @@ Node::ptr Parser::parse()
             + lexer()->fileName() + "\n", *this, Token::ptr());
     }
 
-    setMode(VERTICAL);
+    setMode(VERTICAL);  // outside of any blocks
+    // parsing text
     Node::ptr document = parseGroup(GROUP_DOCUMENT);
     document->setType("document");
     

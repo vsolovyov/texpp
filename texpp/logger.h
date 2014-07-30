@@ -32,13 +32,13 @@ public:
     typedef shared_ptr<Logger> ptr;
 
     enum Level {
-        MTRACING = 5,
-        TRACING = 10,
-        PLAIN = 15,
-        MESSAGE = 20,
-        WRITE = 25,
-        SHOW = 30,
-        ERROR = 40,
+        MTRACING = 5,   // put the text where cursor is
+        TRACING = 10,   // put the text where cursor is but bracketed  {...}
+        PLAIN = 15,     // put the text where cursor is
+        MESSAGE = 20,   // add message after space
+        WRITE = 25,     // write message to console in new line and begin new line
+        SHOW = 30,      // begin from new line in format "> message.\n";
+        ERROR = 40,     //
         CRITICAL = 50,
         UNIMPLEMENTED = 100
     };
@@ -47,6 +47,11 @@ public:
     virtual ~Logger() {}
 
     //const string& levelName(Level level) const;
+
+    /** return text situated aftef token in line
+     * if source file for parcer and token is the same
+     * return empty string if token is invalid
+     */
     string tokenLines(Parser& parser, shared_ptr<Token> token) const;
 
     virtual bool log(Level level, const string& message,

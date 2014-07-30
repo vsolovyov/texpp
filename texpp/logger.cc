@@ -49,12 +49,14 @@ const string& Logger::levelName(Level level) const
 
 string Logger::tokenLines(Parser& parser, Token::ptr token) const
 {
-    if(!token || !token->lineNo()) return string();
+    if(!token || !token->lineNo()) return string();     // NOTE: usless line of code
+    // condition chakes before tokenLines() function calls
 
     std::ostringstream r;
     if(parser.lexer()->fileName().empty()) r << "<*> ";
-    else r << "l." << token->lineNo() << " ";
+    else r << "l." << token->lineNo() << " ";   // write nomber of line
 
+    // if the parsing file is the same as for token
     if(token->fileName() == parser.lexer()->fileName()) {
         const string& line = parser.lexer()->line(token->lineNo());
         if(!line.empty()) {
@@ -101,17 +103,18 @@ bool ConsoleLogger::log(Level level, const string& message,
         r << '{' << message << '}';// << std::endl;
     } else if(level <= PLAIN) {
         r << message;
-    } else if(level <= MESSAGE) {
+    } else if(level <= MESSAGE) {   // add message after space
         if(m_linePos) r << ' '; 
         r << message;
     } else if(level <= WRITE) {
-        if(m_linePos) r << '\n'; 
+        // begin write from new line if current line is not empty
+        if(m_linePos) r << '\n';
         r << message << '\n';
-    } else {
+    } else {    // SHOW | ERROR | CRITICAL | UNIMPLEMENTED
         if(m_linePos) r << '\n';
         if(level <= SHOW) r << "> " << message << ".\n";
         else r << "! " << message << ".\n";
-        if(token && token->lineNo())
+        if(token && token->lineNo())    // token isn`t invalid ?
             r << tokenLines(parser, token) << "\n";
     }
 
@@ -120,10 +123,10 @@ bool ConsoleLogger::log(Level level, const string& message,
     BOOST_FOREACH(unsigned char ch, r.str()) {
         if(ch == '\n' || ch == newlinechar) {
             r1 << '\n';
-        } else if(ch <= 0x1f) {
-            r1 << "^^" << char(ch+64);
-        } else if(ch >= 0x7f) {
-            r1 << "^^" << std::hex << int(ch);
+        } else if(ch <= 0x1f) {         // lower than printable symbols area
+            r1 << "^^" << char(ch+64);  // replace by "super symbol"
+        } else if(ch >= 0x7f) {         // higher tnan printable symbols area
+            r1 << "^^" << std::hex << int(ch);  // output in hex mode 0x...
         } else {
             r1 << ch;
         }

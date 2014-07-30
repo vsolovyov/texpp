@@ -27,6 +27,9 @@ class Parser;
 
 namespace base {
 
+/** initialising of m_symbols by control comands and control variables
+ * filling lookup table m_catCodeTable for all symbols (char -> category code)
+ */
 void initSymbols(Parser& parser);
 
 } // namespace base
