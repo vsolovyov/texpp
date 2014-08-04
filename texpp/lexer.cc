@@ -91,16 +91,16 @@ const string& Lexer::line(size_t n) const
 
 bool Lexer::nextLine()
 {
-    m_charPos = 0;
+    m_charPos = 0;      // reset counters  - begin of line
     m_charEnd = 0;
 
-    m_char = -1;
+    m_char = -1;        // set data by default
     m_catCode = Token::CC_NONE;
 
-    m_linePos += m_lineOrig.size();
-    m_lineOrig.clear();
+    m_linePos += m_lineOrig.size();     // increase m_linePos by length of current line
+    m_lineOrig.clear();                 // reset buffer for line string
 
-    if(m_interactive && m_file == &std::cin) {
+    if(m_interactive && m_file == &std::cin) {  // read line from console if interactive mode
         std::cout << "*";
     }
 
@@ -126,12 +126,12 @@ bool Lexer::nextLine()
         return false;
     }
 
-    if(m_saveLines)
+    if(m_saveLines)         // save line, add it into the m_lines vector
         m_lines.push_back(m_lineOrig);
 
     // Discard spaces at the end
     size_t end = m_lineOrig.find_last_not_of(" \r\n");
-    if(end == string::npos) end = -1;   // NOTE: Bereziuk meniningless expression?
+    if(end == string::npos) end = -1;   // NOTE Bereziuk: meniningless expression?
 
     m_lineTex.reserve(end+2);
     m_lineTex.assign(m_lineOrig, 0, end+1);
@@ -144,10 +144,7 @@ bool Lexer::nextLine()
     ++m_lineNo;
     return true;
 }
-/** read next symbol from m_lineTex following the m_charEnd.
- *  Determines catCode for this symbol.
- * @return
- */
+
 bool Lexer::nextChar()
 {
     m_charPos = m_charEnd;      // TODO Bereziuk move it to following if()
@@ -275,7 +272,7 @@ Token::ptr Lexer::nextToken()
             if(m_catCode == Token::CC_ESCAPE) {
                 Token::ptr token = newToken(Token::TOK_CONTROL, "\\");
                 string value("\\");
-
+                // combines the escape and all following letters into a control world
                 if(nextChar()) {
                     value += char(m_char);
 
@@ -285,11 +282,11 @@ Token::ptr Lexer::nextToken()
 
                         m_state = ST_SKIP_SPACES;
                         m_charEnd = m_charPos;
-
+                    // if the following symbol is space, goes into state skipping spaces
                     } else if(m_catCode == Token::CC_SPACE) {
                         m_state = ST_SKIP_SPACES;
                     }
-
+                    // init token by this control world
                     token->setValue(value);
                     token->setCharEnd(std::min(m_charEnd, m_lineOrig.size()));
                     token->setSource(m_lineOrig.substr(

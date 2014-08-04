@@ -167,7 +167,7 @@ bool Def::invokeWithPrefixes(Parser& parser, shared_ptr<Node> node,
     int paramNum = 0;
     Token::list_ptr params(new Token::list);
     while(parser.peekToken(false)) {
-        /* If a brace is encountered -- "{" or "}", then*/
+        // If a brace is encountered - "{" or "}", then brea
         if(parser.peekToken(false)->isCharacterCat(Token::CC_BGROUP)) {
             break;
         } else if(parser.peekToken(false)->isCharacterCat(Token::CC_EGROUP)) {

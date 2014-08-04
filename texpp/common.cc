@@ -49,6 +49,10 @@ pair<int,bool> safeDivide(int v1, int v2)
     return std::make_pair(v1/v2, false);
 }
 
+/** represent string in format where all special symbols replaced by
+ *  sequence of visible symbols of which special symbols are composed
+ * @return converted string for representing
+ */
 string reprString(const string& s)
 {
     std::ostringstream r;

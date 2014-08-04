@@ -63,8 +63,21 @@ protected:
 
     Token::ptr newToken(Token::Type type,
                     const string& value = string());
-
+    /**
+     * read new line into
+     * reset position counters m_charPos, m_charEnd
+     * increase counter m_linePos by length of current line
+     * fill m_lineOrig string by string from line or console
+     * fill m_lineTex string by string from line or console with modified endlinechar
+     * increment line number counter m_lineNo
+     * @return false if end of file; true otherwise
+     */
     bool nextLine();
+
+    /** read next symbol from m_lineTex following the m_charEnd.
+     *  Determines category code for this symbol
+     * @return false if end of line; true - otherwise
+     */
     bool nextChar();
 
 protected:

@@ -38,21 +38,21 @@ public:
         TOK_SKIPPED,    // coments(%...), spaces,
         TOK_CHARACTER,  // letters,\n,\r,{,},
         TOK_CONTROL     // \par, \def, \usepakage
-                        // \draft,\documentclass,\setcitestyle
+                        // \draft,\documentclass,\setcitestyle,...
     };
 
-// Category Code for sorting tokens
+// Category for characters - separation of content
     enum CatCode {
         CC_ESCAPE = 0,      // escape character "\"
         CC_BGROUP = 1,      // Begin group: {
         CC_EGROUP = 2,      // End group: }
         CC_MATHSHIFT = 3,   // Math shift: $
-        CC_ALIGNTAB = 4,    // Alignment: &
-        CC_EOL = 5,         // End-of-line
+        CC_ALIGNTAB = 4,    // Alignment table: &       ->   \haign,\valign
+        CC_EOL = 5,         // End-of-line '\n'         ->   \endlinechar
         CC_PARAM = 6,       // Parameter for macros: #
         CC_SUPER = 7,       // Math superscript: ^
         CC_SUB = 8,         // Math subscript: _
-        CC_IGNORED = 9,     // Ignored entirely
+        CC_IGNORED = 9,     // Ignored entirely         -> <null> character == 0
         CC_SPACE = 10,      // Space
         CC_LETTER = 11,     // Letters: the alphabet.
         CC_OTHER = 12,      // 'Other' character - everything else: ., 1, :, etc.
@@ -136,6 +136,12 @@ public:
 
     string texRepr(Parser* parser = NULL) const;
     string meaning(Parser* parser = NULL) const;
+
+    /**
+     * @return represented token string in format
+     * Token(Token::typeName, Token::catCodeName, value, source,
+     *      m_linePos, m_lineNo, m_charPos, m_charEnd )
+     */
     string repr() const;
 
     Token::ptr lcopy() const {
@@ -163,7 +169,7 @@ protected:
 
     bool        m_lastInLine;   // ID: this is the last Token in the line
 
-    shared_ptr<string> m_fileName;
+    shared_ptr<string> m_fileName;  // tex file name - source file for this token
 
     static string EMPTY_STRING;
 };

@@ -47,10 +47,10 @@ int main(int argc, char** argv)
                     texpp::Logger::ptr(new texpp::ConsoleLogger));
     texpp::Node::ptr document = parser.parse();
 
-    if(file == &std::cin) {
+//    if(file == &std::cin) {
         std::cout << "Parsed document: " << std::endl;
         std::cout << document->treeRepr();
-    }
+//    }
     
     if(file != &std::cin) {
         static_cast<std::ifstream*>(file)->close();

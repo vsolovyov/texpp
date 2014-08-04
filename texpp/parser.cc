@@ -71,6 +71,9 @@ const string& Node::valueString() const
     else return *unsafe_any_cast<string>(&m_value);
 }
 
+/** return child node named 'name' from m_children node list
+ *  return empty node if no such name in m_children node list
+ */
 Node::ptr Node::child(const string& name)
 {
     ChildrenList::iterator end = m_children.end();
@@ -113,7 +116,7 @@ string Node::treeRepr(size_t indent) const
         ChildrenList::const_iterator end = m_children.end();
         for(ChildrenList::const_iterator it = m_children.begin();
                                             it != end; ++it) {
-            str += string(indent+2, ' ') +
+            str += string(indent+2, ' ') +      // hiearhical backward
                     it->first + ": " + it->second->treeRepr(indent+2);
         }
     } else {

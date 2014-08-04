@@ -45,11 +45,13 @@ const texpp::string catCodeLongNames[] = {
     "comment character",
     "invalid character",
 };
+// equal string representing for enum Token::Type
 const texpp::string typeNames[] = {
     "TOK_SKIPPED",
     "TOK_CHARACTER",
     "TOK_CONTROL"
 };
+// equal string representing for enum Token::CatCode
 const texpp::string catCodeNames[] = {
     "CC_ESCAPE",
     "CC_BGROUP",

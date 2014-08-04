@@ -97,7 +97,6 @@ public:
     /**
      * @brief append node to m_children list with tag "name"
      * @param name - tag of node
-     * @param node
      */
     void appendChild(const string& name, Node::ptr node) {
         m_children.push_back(make_pair(name, node));
@@ -106,14 +105,20 @@ public:
     Token::ptr lastToken();
 
     string repr() const;
+
+    /**
+     * @brief represent token tree nodes
+     * @param indent - token level of the hierarchy; 0 - is top level
+     * @return text for representing
+     */
     string treeRepr(size_t indent = 0) const;
 
 protected:
-    string                  m_type;
-    any                     m_value;
-    vector< Token::ptr >    m_tokens;
+    string                  m_type;     // type of token inside
+    any                     m_value;    // main object in node
+    vector< Token::ptr >    m_tokens;   // set of tokens inside node.
 
-    ChildrenList            m_children;
+    ChildrenList            m_children; // token node list one level lower in the hierarchy
 };
 
 class Parser
