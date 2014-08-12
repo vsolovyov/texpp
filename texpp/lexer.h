@@ -38,7 +38,7 @@ public:
                 bool interactive = false, bool saveLines = false);
     ~Lexer();
 
-    // return next Token from tex
+    // return next Token
     Token::ptr nextToken();
 
     bool interactive() const { return m_interactive; }
@@ -59,12 +59,15 @@ public:
     void assignCatCode(int ch, int code) { m_catCodeTable[ch] = code; }
 
 protected:
+    /**
+     * @brief initialisation of m_catCodeTable lookup table
+     */
     void init();
 
     Token::ptr newToken(Token::Type type,
                     const string& value = string());
     /**
-     * read new line into
+     * @brief read new line from source
      * reset position counters m_charPos, m_charEnd
      * increase counter m_linePos by length of current line
      * fill m_lineOrig string by string from line or console
@@ -74,7 +77,7 @@ protected:
      */
     bool nextLine();
 
-    /** read next symbol from m_lineTex following the m_charEnd.
+    /** read next symbol from m_lineTex following to the m_charEnd.
      *  Determines category code for this symbol
      * @return false if end of line; true - otherwise
      */
@@ -91,26 +94,27 @@ protected:
 
     shared_ptr<std::istream> m_fileShared;
 
-    std::istream*   m_file;     // .tex file source
-    shared_ptr<string> m_fileName;
+    std::istream*   m_file;         // .tex file source
+    shared_ptr<string> m_fileName;  // source file name
 
-    string  m_lineOrig; // current line
-    string  m_lineTex;
+    string  m_lineOrig; // current line as in source
+    string  m_lineTex;  // current line with modified the last char ('/n' -> '/r')
 
-    size_t  m_linePos;
+    size_t  m_linePos;  // the total number of characters above current line
     size_t  m_lineNo;   // current line number
     size_t  m_charPos;  // actual position of next char in line
     size_t  m_charEnd;  // position of the last char in line
 
     State   m_state;    // processing state
-    int     m_char;
-    Token::CatCode m_catCode;
+    int     m_char;     // buffer for symbol, next to parsing
+    Token::CatCode m_catCode;   // category code for m_char
 
-    int     m_endlinechar;
-    short int     m_catCodeTable[256];  // character-code–category-code pairs <char, CatCode>
+    int     m_endlinechar;  // symbol witch replace last symol in line in plane text
+    short int m_catCodeTable[256];  // lookup table for finding char->CatCode
 
-    bool    m_interactive;
-    bool    m_saveLines;
+    bool    m_interactive;  // true in interactive mode( run program without argument
+                            //  (path to .tex source file))
+    bool    m_saveLines;    // trigger save/don`t save processed lines into m_lines
 
     vector<string> m_lines; // massive of already cinsidered text lines
 };

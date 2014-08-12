@@ -64,6 +64,10 @@ string Parser::BANNER = "This is TeXpp, Version 0.0";
 
 using base::Dimen;
 
+/**
+ * @brief make text representing of m_value
+ * @return m_value if it string, otherwise return empty string
+ */
 const string& Node::valueString() const
 {
     static const string empty;
@@ -472,15 +476,15 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
     Command::ptr cmd = symbol(token, Command::ptr());
     Macro::ptr macro = dynamic_pointer_cast<Macro>(cmd);
 
-    if(cmd && !macro)
-        return Node::ptr();
+    if(cmd && !macro)       // if token is command and isn`t macro define?
+        return Node::ptr(); // skip all commands except macro defines
 
     Node::ptr node(new Node("macro"));
     Node::ptr child(new Node("control_token"));
     child->tokens().push_back(token);   // push token to child node tokens vector
     child->setValue(token);             // init child node m_value by token
     node->appendChild("control_sequence", child);   // add chind to node
-    bool expanded = true;
+    bool expanded = true;       // QUESTION: expand only macro defines
     
     pushBack(NULL);             // clean m_tokenSource and m_token
 
@@ -700,7 +704,6 @@ Token::ptr Parser::rawNextToken(bool expand)
                 token = *it;
         }
     }
-
     return token;
 }
 
@@ -833,7 +836,7 @@ Token::ptr Parser::peekToken(bool expand)
     if(token) {
         //if(token->lineNo())
         //    m_lastToken = token;
-        tokenSource.push_back(token);
+        tokenSource.push_back(token);   //fill tokenSource by this token
     }
 
     // XXX
@@ -981,6 +984,7 @@ void Parser::processTextCharacter(char ch, Token::ptr token)
     }
 }
 
+// TODO Bereziuk: Oh this magic numbers !!!
 void Parser::resetParagraphIndent()
 {
     if(symbol("parshape", base::ParshapeInfo()).parshape.size() != 0)

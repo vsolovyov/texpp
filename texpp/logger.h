@@ -38,7 +38,7 @@ public:
         MESSAGE = 20,   // add message after space
         WRITE = 25,     // write message to console in new line and begin new line
         SHOW = 30,      // begin from new line in format "> message.\n";
-        ERROR = 40,     //
+        ERROR = 40,
         CRITICAL = 50,
         UNIMPLEMENTED = 100
     };
@@ -49,11 +49,16 @@ public:
     //const string& levelName(Level level) const;
 
     /** return text situated aftef token in line
-     * if source file for parcer and token is the same
-     * return empty string if token is invalid
+     *         if source file for parcer and token is the same
+     *  return empty string if token is invalid
      */
     string tokenLines(Parser& parser, shared_ptr<Token> token) const;
 
+    /**
+     * log() interface;
+     * log() shows <message> and <token>
+     * text format depend on <level> variable
+     */
     virtual bool log(Level level, const string& message,
                     Parser& parser, shared_ptr<Token> token) = 0;
 };

@@ -61,10 +61,23 @@ namespace texpp {
     pair<int,bool> safeMultiply(int v1, int v2, int max);
     pair<int,bool> safeDivide(int v1, int v2);
 
+    /** represent string in format where all special symbols replaced by
+     *  sequence of visible symbols of which special symbols are composed
+     * @return converted string for representing
+     */
     string reprString(const string& s);
+
+    /**
+     * @brief represent value in string format
+     * @param value - object with type boost::any
+     * @return string as value text representing in certain format
+     */
     string reprAny(const any& value);
 } // namespace texpp
 
+/**
+ *  redefining operator() for boost::shared_ptr as getter to owned sourse
+ */
 namespace std { namespace tr1 {
     template<typename T> struct hash< texpp::shared_ptr<T> > {
         size_t operator()(const texpp::shared_ptr<T>& v) const {

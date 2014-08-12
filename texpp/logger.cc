@@ -31,7 +31,7 @@ namespace {
 /*texpp::string loggerLevelNames[] = {
     "message", "show", "error", "critical"
 };*/
-const unsigned int MAX_LINE_CHARS = 79;
+const unsigned int MAX_LINE_CHARS = 79;     // max console width capacity
 const unsigned int MAX_TLINE_CHARS = 50;
 } // namespace
 
@@ -114,7 +114,7 @@ bool ConsoleLogger::log(Level level, const string& message,
         if(m_linePos) r << '\n';
         if(level <= SHOW) r << "> " << message << ".\n";
         else r << "! " << message << ".\n";
-        if(token && token->lineNo())    // token isn`t invalid ?
+        if(token && token->lineNo())    // if token is valid
             r << tokenLines(parser, token) << "\n";
     }
 

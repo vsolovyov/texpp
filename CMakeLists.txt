@@ -6,7 +6,7 @@ include(CTest)
 
 # Find boost libraries
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.34.0 COMPONENTS system filesystem regex python REQUIRED)
+find_package(Boost 1.55.0 EXACT COMPONENTS system filesystem regex python REQUIRED)
 
 # Find python interpreter
 find_package(PythonInterp)
@@ -15,6 +15,8 @@ if(NOT PYTHONINTERP_FOUND)
 endif(NOT PYTHONINTERP_FOUND)
 
 # Find python libraries
+#set(Python_ADDITIONAL_VERSIONS 3.2)
+#find_package( PythonLibs 3.2  EXACT REQUIRED )
 find_package(PythonLibs)
 if(NOT PYTHONLIBS_FOUND)
     message("python libraries NOT found - texpy and hrefkeywords will NOT be built.")

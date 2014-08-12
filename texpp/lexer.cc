@@ -91,26 +91,38 @@ const string& Lexer::line(size_t n) const
 
 bool Lexer::nextLine()
 {
-    m_charPos = 0;      // reset counters  - begin of line
+    // reset counters  - begin of line
+    m_charPos = 0;
     m_charEnd = 0;
 
-    m_char = -1;        // set data by default
+    // set data by default
+    m_char = -1;
     m_catCode = Token::CC_NONE;
 
-    m_linePos += m_lineOrig.size();     // increase m_linePos by length of current line
-    m_lineOrig.clear();                 // reset buffer for line string
+    m_linePos += m_lineOrig.size(); // increase m_linePos in current line length
+    m_lineOrig.clear();             // reset buffer for line string
 
-    if(m_interactive && m_file == &std::cin) {  // read line from console if interactive mode
+    // scan text from console if we use interactive mode
+    if(m_interactive && m_file == &std::cin) {
         std::cout << "*";
     }
 
-    // Scan line until '\n' or '\r' or '\r\n'
+    // TODO: check this event in simple project
+    // Scan text line from tex-source file till '\n' or '\r' or '\r\n' symbol
+    // TODO: Should this loop run on interactive mode?
     while(true) {
+        // scan text line character by character
         char c = m_file->get();
+
+        // check do some troublel with file?
         if(!m_file->good()) // TODO: handle errors
             break;
 
+        // push scanned symbol into variable m_lineOrig
         m_lineOrig.push_back(c);
+
+
+        // push '\n' to m_lineOrig if c=='\r' and next after c char is '\n'
         if(c == '\n') {
             break;
         } else if(c == '\r') {
@@ -120,23 +132,25 @@ bool Lexer::nextLine()
         }
     }
 
-    // Check EOF
+    // Check EOF. No input data mean texpp automat assesed end of file
     if(m_lineOrig.empty()) {
         m_lineTex.clear();
         return false;
     }
 
-    if(m_saveLines)         // save line, add it into the m_lines vector
+    // save line, add it into the m_lines vector
+    if(m_saveLines)
         m_lines.push_back(m_lineOrig);
 
     // Discard spaces at the end
     size_t end = m_lineOrig.find_last_not_of(" \r\n");
-    if(end == string::npos) end = -1;   // NOTE Bereziuk: meniningless expression?
+    // NOTE Bereziuk: meniningless expression?
+    if(end == string::npos) end = -1;
 
     m_lineTex.reserve(end+2);
     m_lineTex.assign(m_lineOrig, 0, end+1);
 
-    // Append endlinechar
+    // Append endlinechar to the end of m_lineTex
     if(m_endlinechar >= 0 && m_endlinechar <= 255)
         m_lineTex += char(m_endlinechar);
 
@@ -147,7 +161,7 @@ bool Lexer::nextLine()
 
 bool Lexer::nextChar()
 {
-    m_charPos = m_charEnd;      // TODO Bereziuk move it to following if()
+    m_charPos = m_charEnd;      // updating m_charPos
 
     if(m_charPos >= m_lineTex.size()) { // end of line
         m_char = -1;
@@ -155,9 +169,12 @@ bool Lexer::nextChar()
         return false;
     }
 
-    m_char = m_lineTex[m_charPos];      // m_char - next character
-    m_catCode = Token::CatCode(getCatCode(m_char)); // analysing what kind of symbol
+    // m_char - next character
+    m_char = m_lineTex[m_charPos];
+    // analysing what kind of symbol
+    m_catCode = Token::CatCode(getCatCode(m_char));
 
+    // NOTE Bereziuk: some magic here
     if(m_catCode == Token::CC_SUPER && m_charPos+2 < m_lineTex.size() &&
                                     m_lineTex[m_charPos+1] == m_char) {
         if(m_charPos+3 < m_lineTex.size() &&
@@ -216,7 +233,7 @@ Token::ptr Lexer::nextToken()
                 m_charEnd = m_lineOrig.size();
                 return newToken(Token::TOK_SKIPPED);
             }
-            // TODO Berziuk refactofing with nextLine
+
             if(!nextLine()) {       // read next line
                 m_state = ST_EOF;
                 return Token::ptr();
@@ -226,6 +243,16 @@ Token::ptr Lexer::nextToken()
         }
 
         /////////// Handle ST_NEW_LINE and ST_SKIP_SPACES
+        // State N(new line) is entered at the beginning of each new input line.
+        // In state N all space tokens (that is, characters of category 10) are
+        // ignored; an end-of-line character is converted into a \par token.
+        // All other tokens bring TEX into state M.
+
+        // State S(skip spaces) is entered in any mode after a control word or
+        // control space (but after no other control symbol), or, when in state M,
+        // after a space. In this state all subsequent spaces or end-of-line
+        // characters in this input line are discarded.
+
         else if(m_state == ST_NEW_LINE || m_state == ST_SKIP_SPACES) {
 
             //// CC_EOL
@@ -255,6 +282,7 @@ Token::ptr Lexer::nextToken()
             //// CC_SPACE
             else {
                 Token::ptr token = newToken(Token::TOK_SKIPPED);
+                // skip all spaces
                 while(nextChar() && m_catCode == Token::CC_SPACE) {}
                 m_charEnd = m_charPos;
                 token->setCharEnd(std::min(m_charEnd, m_lineOrig.size()));
@@ -266,13 +294,18 @@ Token::ptr Lexer::nextToken()
         }
 
         /////////// Handle ST_MIDDLE
+        // state M (middle of line). It is entered after characters of
+        // categories 1–4, 6–8, and 11–13, and after control symbols other
+        // than control space. An end-of-line character encountered in this
+        // state results in a space token.
         else if(m_state == ST_MIDDLE) {
 
             //// CC_ESCAPE
             if(m_catCode == Token::CC_ESCAPE) {
                 Token::ptr token = newToken(Token::TOK_CONTROL, "\\");
                 string value("\\");
-                // combines the escape and all following letters into a control world
+                // combines the escape and all following letters
+                // into a control world
                 if(nextChar()) {
                     value += char(m_char);
 
@@ -282,7 +315,8 @@ Token::ptr Lexer::nextToken()
 
                         m_state = ST_SKIP_SPACES;
                         m_charEnd = m_charPos;
-                    // if the following symbol is space, goes into state skipping spaces
+                        // if the following symbol is space, texpp automate
+                        // goes into state S (skipping spaces)
                     } else if(m_catCode == Token::CC_SPACE) {
                         m_state = ST_SKIP_SPACES;
                     }
@@ -326,6 +360,8 @@ Token::ptr Lexer::nextToken()
             else if(m_catCode == Token::CC_INVALID) {
                 return newToken(Token::TOK_SKIPPED);
             }
+            // NOTE Bereziuk: All symbols in fact do not parsing.
+            // We have no approrpiate mechanism to set CatCode for it
             //// CC_BGROUP CC_EGROUP CC_MATHSHIFT CC_ALIGNTAB CC_PARAM
             //// CC_SUPER CC_SUB CC_LETTER CC_OTHER
             else {

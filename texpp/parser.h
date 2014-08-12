@@ -102,8 +102,16 @@ public:
         m_children.push_back(make_pair(name, node));
     }
 
+    /**
+     * return last real token from Node-token tree;
+     * return empty token if no token-tree is emppty
+     */
     Token::ptr lastToken();
 
+    /**
+     * @brief representing node in string format
+     * @return string in format Node(<m_type> <m_value>)
+     */
     string repr() const;
 
     /**
@@ -117,15 +125,17 @@ protected:
     string                  m_type;     // type of token inside
     any                     m_value;    // main object in node
     vector< Token::ptr >    m_tokens;   // set of tokens inside node.
-
-    ChildrenList            m_children; // token node list one level lower in the hierarchy
+    ChildrenList            m_children; // token node list one level lower
+                                        // in the hierarchy
 };
 
 class Parser
 {
 public:
-    enum Interaction { ERRORSTOPMODE, SCROLLMODE,
-                       NONSTOPMODE, BATCHMODE };
+    enum Interaction { ERRORSTOPMODE,
+                       SCROLLMODE,
+                       NONSTOPMODE,
+                       BATCHMODE };
 // list of modes for execution processor
     enum Mode { NULLMODE,
                 VERTICAL,   // vertical lists are broken into pages
@@ -135,8 +145,10 @@ public:
                 MATH,       // formulas are built out of math lists
                 DMATH };
     enum GroupType { GROUP_DOCUMENT,
-                     GROUP_NORMAL, GROUP_SUPER,
-                     GROUP_MATH, GROUP_DMATH,
+                     GROUP_NORMAL,
+                     GROUP_SUPER,
+                     GROUP_MATH,        // inside formula $...$
+                     GROUP_DMATH,
                      GROUP_CUSTOM };
 
     Parser(const string& fileName, std::istream* file,
@@ -175,10 +187,11 @@ public:
     Token::ptr lastToken();
 
     /**
-     * @brief   read and put all next tokens to m_tokenSourse list untill NoSkipped token
+     * @brief   put all next tokens to m_tokenSourse list untill real token
      * @return  next real(no skipped) token
      */
     Token::ptr peekToken(bool expand = true);
+
     /**
      * @brief   insert tokens from m_tokenSource into argument tokenVector,
      *          update m_lineNo
@@ -187,8 +200,10 @@ public:
      */
     Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
                          bool expand = true);
+
     /**
-     * @brief insert tokens from m_tokenSource to tokenVector
+     * @brief copy considered tokens from m_tokenSource to m_tokenQueue
+     *        copy considered tokens from m_tokenSource to tokenVector
      * clean m_tokenSource and m_token
      */
     void pushBack(vector< Token::ptr >* tokenVector);
@@ -373,7 +388,7 @@ protected:
 
     Token::ptr      m_lastToken;
     TokenSet        m_noexpandTokens;
-    TokenQueue      m_tokenQueue;
+    TokenQueue      m_tokenQueue;       // QUESTION: for witch purpose it serve?
 
     int             m_groupLevel;
     bool            m_end;

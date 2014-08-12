@@ -71,6 +71,7 @@ protected:
     shared_ptr<Token> m_token;
 };
 
+// class witch describe behavior of macro define command "\macro"
 class Macro: public Command
 {
 public:
@@ -115,12 +116,14 @@ public:
     ConditionalEnd(const string& name = string()): Macro(name) {}
 };
 
+// class witch describe behavior of the symbol '{'
 class Begingroup: public Command
 {
 public:
     Begingroup(const string& name = string()): Command(name) {}
 };
 
+// class witch describe behavior of the symbol '}'
 class Endgroup: public Command
 {
 public:
