@@ -6,12 +6,27 @@ This fork was created because the original project is no longer supported.
 
 INSTALL
 
+1)
+
 Requirements:
-gcc cmake libboost-dev libboost-filesystem-dev libboost-regex-dev libboost-python-dev libboost-test-dev libicu-dev
+gcc cmake libboost-dev libboost-filesystem-dev libboost-regex-dev libboost-python-dev libboost-test-dev libicu-dev python3.4-dev 
+
+# Boost library installation (for Ubuntu 14.04 LTS)
+wget -O boost_1_56_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.tar.gz/download
+tar xzvf boost_1_56_0.tar.gz
+cd boost_1_56_0/
+sudo apt-get update
+./bootstrap.sh --with-python=/usr/bin/python3 --with-python-root=/usr --prefix=/usr/local
+# Find the maximum number of physical cores:
+n=`cat /proc/cpuinfo | grep "cpu cores" | uniq | awk '{print $NF}'`
+# Install boost in parallel:
+sudo ./b2 --with=all -j $n install
+sudo sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/local.conf'
+sudo ldconfig
 
 For Linux environment:
 #chekout
-git clone git://github.com/graphite/texpp.git
+git clone https://github.com/Domest0s/texpp.git
 #build
 cd texpp
 mkdir build
