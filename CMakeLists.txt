@@ -6,10 +6,10 @@ include(CTest)
 
 # Find boost libraries
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.56.0 COMPONENTS system filesystem regex python-3 REQUIRED)
+find_package(Boost 1.56.0 COMPONENTS system filesystem regex python3 REQUIRED)
 
 # Find python interpreter
-find_package(PythonInterp)
+find_package(PythonInterp 3.4)
 if(NOT PYTHONINTERP_FOUND)
     message("python interpreter NOT found - tests/hrefkeywords will NOT be built.")
 endif(NOT PYTHONINTERP_FOUND)
