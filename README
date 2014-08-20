@@ -6,8 +6,6 @@ This fork was created because the original project is no longer supported.
 
 INSTALL
 
-1)
-
 Requirements:
 gcc cmake libboost-dev libboost-filesystem-dev libboost-regex-dev libboost-python-dev libboost-test-dev libicu-dev python3.4-dev 
 
