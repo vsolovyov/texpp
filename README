@@ -30,6 +30,7 @@ sudo ldconfig
 For Linux environment:
 #chekout
 git clone https://github.com/Domest0s/texpp.git
+git checkout portingToPython3
 #build
 cd texpp
 mkdir build
