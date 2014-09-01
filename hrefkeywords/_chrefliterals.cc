@@ -63,9 +63,11 @@ public:
     WordsDict(string filename, size_t abbrMaxLen)
         : _abbrMaxLen(abbrMaxLen)
     {
+        // fill a fictonary of all words(lines) of input file
         std::ifstream wordsfile(filename.c_str());
         string word;
         while(wordsfile.good()) {
+            // QUESTION: every word is one line of file
             std::getline(wordsfile, word);
             size_t s = word.size();
             if(s > 1 && s <= abbrMaxLen &&
@@ -82,22 +84,45 @@ public:
 
 protected:
     std::set<string> _words;
-    size_t _abbrMaxLen;
+    size_t _abbrMaxLen;     // max length of word in dictionary
 };
 
+/**
+ * @return true if ch is digit or '-' or '/' symbol,
+ * otherwise return false
+ */
 inline bool _isglue(wchar_t ch) {
     return iswdigit(ch) || ch == L'-' || ch == L'/';
 }
 
+/**
+ * @return true if ch is space,'~' or '-' symbol
+ * otherwise return false
+ */
 inline bool _isIgnored(wchar_t ch) {
     return ch == L'~' || ch == L'-' || ch == L'/' || iswspace(ch);
 }
 
+/**
+ * @return true if word is article
+ * otherwise return false
+ */
 inline bool _isIgnoredWord(const string& word) {
     return word == "the" || word == "a" || word == "an" ||
            word == "The" || word == "A" || word == "An";
 }
 
+/**
+ * @brief wStrToStr - decompose word wstr from wide(multibyte)
+ * characters String format (basic_string<wchar_t>) into
+ * narrow(1 byte) character array (basic_string<char>)
+ * @param wstr - string of wide characters
+ * @param toLower - case convertor trigger
+ * if true - translate to lower case all letters in wstr
+ * if false - leave the word register as is
+ * @return narrow character array where the multibyte characters
+ * are stored consistently and separated by '\0' delimiter
+ */
 string wStrToStr(std::wstring wstr, bool toLower=false)
 {
     string result("");
@@ -114,6 +139,12 @@ string wStrToStr(std::wstring wstr, bool toLower=false)
     return result;
 }
 
+/**
+ * @brief strToWStr - compose wide characters String from narrow character array
+ * @param input - narrow(1 byte) character array (basic_string<char>)
+ * @return translated wide(multibyte) characters String (basic_string<wchar_t>)
+ */
+// TODO: refactoring "input","position"
 std::wstring strToWStr(string input)
 {
     setlocale(LC_ALL, "en_US.UTF-8");
@@ -122,6 +153,7 @@ std::wstring strToWStr(string input)
     wchar_t wChar;
     std::wstring result;
     while (*position) {
+        // Convert multibyte sequence to wide character. (position -> wChar)
         size_t len = mbrtowc(&wChar, position, MB_CUR_MAX, &state);
         if (len <= 0 || len > MB_CUR_MAX)
             break;
@@ -131,6 +163,19 @@ std::wstring strToWStr(string input)
     return result;
 }
 
+/**
+ * @brief stem_wstring make stemming of the string input
+ * @param input - target for stemming, wide character string
+ * @param multilang - bool trigger to support multilanguage stemming
+ * if true - support english, french, german, spanish, italian,
+ *           portuguese, dutch, danish, finnish_stem, norwegian,
+ *           swedish and russian languages
+ * if false(by default) - support only english and russian languages
+ * @return return stemmed word (appropriate to the input) if steming
+ *         passed successful.
+ *         return the input word otherwise
+ */
+// TODO: refactoring "input", "input_backup"
 std::wstring stem_wstring(std::wstring input, bool multilang=false)
 {
     std::wstring input_backup(input);
@@ -199,6 +244,21 @@ std::wstring stem_wstring(std::wstring input, bool multilang=false)
     return input_backup;
 }
 
+/**
+ * @brief normLiteral
+ * @param literal
+ * @param wordsDict - words dictiona
+ * @param whiteList
+ * @param multilang
+ * @return
+ */
+// TODO refactoring:
+//      s(literal length),
+//      n(position counter),
+//      k,
+//      final,
+//      iter,
+//      clear from unused variables
 string normLiteral(string literal,
         const WordsDict* wordsDict, const dict& whiteList,
         bool multilang)
@@ -216,16 +276,27 @@ string normLiteral(string literal,
     UnicodeString ULiteral = icu::UnicodeString::fromUTF8(StringPiece(literal));
     UnicodeString normULiteral = normalizer->normalize(ULiteral, ecode);
     StringCharacterIterator iter(normULiteral);
+    // fill the final string if specified code is
+    // a base character(letters, numbers, spacing combining marks, and enclosing marks),
+    // a blank character ("blank" or "horizontal space")
+    // or a punctuation character.
+    // Otherwise - skip the symbol
     while(iter.hasNext())
     {
+        // SURMISE: fill the final only by base symbols, blanks and punctuation symbols.
+        //          Skip any other symbols
         if (u_isbase(iter.current()) || u_isblank(iter.current()) || u_ispunct(iter.current()))
             final += iter.current();
+        // move iterator to the next word
         iter.next();
     }
+    // Convert the UnicodeString final to UTF-8 and append the result
+    // to a standard string unicodeNormLiteral
     final.toUTF8String(unicodeNormLiteral);
     std::wstring wLiteral = strToWStr(unicodeNormLiteral);
     size_t s = wLiteral.length();
     /* convert to lowercase and check the whitelist */
+    // return the literal if the dictionary whiteList contain wLiteral
     if(whiteList.has_key(wStrToStr(wLiteral, true))) return literal;
 
     /* TODO: handle 's */
@@ -233,7 +304,7 @@ string normLiteral(string literal,
         wchar_t ch = n < s ? wLiteral[n] : 0;
 
         if(wordStart < n) { // inside a word
-            if(iswalnum(ch)) {
+            if(iswalnum(ch)) {  // if ch is alpha or dirit
                 // add to current word
             } else if(ch == '.') {
                 // add to current word but remember the dot position
@@ -250,7 +321,7 @@ string normLiteral(string literal,
                 }
 
                 // extract and lower the word
-                bool isAbbr = false;
+                bool isAbbr = false;    // tag - does the literal is abbreviation
                 size_t lastUpper = string::npos;
                 size_t firstLower = string::npos;
                 std::wstring word(wLiteral.begin() + wordStart, wLiteral.begin() + n + 1);
@@ -268,10 +339,12 @@ string normLiteral(string literal,
                     } else if(iswlower(word1[k])) {
                         if(firstLower > k) firstLower = k;
                     } else { // digit or dot
+                        // NOTE: if digit or dot is firsts(k==0) - is abbreviation also?
                         isAbbr = true;
                     }
                 }
 
+                //
                 if(n+1 < s && _isIgnoredWord(wStrToStr(word))) {
                     // Skip articles, but not at the end
                     continue;
@@ -551,8 +624,10 @@ TextTagList findLiterals(const TextTagList& tags,
     TextTagList result;
 
     // Detemine a maximum literal length
+    // QUESTION: What variable "e" mean? I`m not sure that the default
+    //           constructor for "e" is not "garbage"
     if(maxChars == 0) {
-        for(stl_input_iterator<str> it(literals.iterkeys()), e;
+        for(stl_input_iterator<str> it(literals.keys()), e;
                                                 it != e; ++it) {
             size_t l = len(*it);
             if(l > maxChars)
