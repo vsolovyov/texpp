@@ -70,8 +70,7 @@ public:
             // QUESTION: every word is one line of file
             std::getline(wordsfile, word);
             size_t s = word.size();
-            if(s > 1 && s <= abbrMaxLen &&
-                    (s < 2 || word.substr(s-2) != "'s") ) {
+            if(s >= _abbrMinLen && s <= abbrMaxLen && word.substr(s-2) != "'s")  {
                 _words.insert(word);
             }
         }
@@ -85,6 +84,7 @@ public:
 protected:
     std::set<string> _words;
     size_t _abbrMaxLen;     // max length of word in dictionary
+    static const size_t _abbrMinLen = 2;
 };
 
 /**
@@ -245,20 +245,25 @@ std::wstring stem_wstring(std::wstring input, bool multilang=false)
 }
 
 /**
- * @brief normLiteral
- * @param literal
- * @param wordsDict - words dictiona
- * @param whiteList
- * @param multilang
- * @return
+ * @brief normLiteral - separate input literal from unpredicted kind of symbols,
+ *                      determine does the input literal is abbreviation.
+ *                      If no - make stemming of input literal, return the result
+ *                      if yes - return input literal in upper case when every
+ *                      letter separated by dots.
+ * @param literal - input string variable
+ * @param wordsDict - words dictionary. Dictionary contain all words whitch can`t
+ * be an abbreviation
+ * @param whiteList - dictionary with known abbreviation
+ * @param multilang - bool variable. Will support multilingualism?
+ * @return normalized string
  */
 // TODO refactoring:
 //      s(literal length),
 //      n(position counter),
-//      k,
-//      final,
-//      iter,
-//      clear from unused variables
+//      k(position counter),
+//      final(string to write there from input literal only predicted kind on chars)
+//      iter(unicode position iterator "positionIterator"),
+//      clear from unused variables ?
 string normLiteral(string literal,
         const WordsDict* wordsDict, const dict& whiteList,
         bool multilang)
@@ -267,7 +272,7 @@ string normLiteral(string literal,
     std::wstring nWLiteral;
     size_t wordStart = string::npos;
     size_t lastDot = string::npos;
-    string lowercaseLiteral(""), unicodeNormLiteral;;
+    string lowercaseLiteral(""), unicodeNormLiteral;
     setlocale(LC_ALL, "en_US.UTF-8");
     /* Decompose unicode chars to the basic ones */
     UErrorCode ecode = U_ZERO_ERROR;
@@ -283,11 +288,11 @@ string normLiteral(string literal,
     // Otherwise - skip the symbol
     while(iter.hasNext())
     {
-        // SURMISE: fill the final only by base symbols, blanks and punctuation symbols.
-        //          Skip any other symbols
-        if (u_isbase(iter.current()) || u_isblank(iter.current()) || u_ispunct(iter.current()))
+        if (u_isbase(iter.current()) ||
+                u_isblank(iter.current()) ||
+                u_ispunct(iter.current()))
             final += iter.current();
-        // move iterator to the next word
+        // move iterator to the next char
         iter.next();
     }
     // Convert the UnicodeString final to UTF-8 and append the result
@@ -787,4 +792,3 @@ BOOST_PYTHON_MODULE(_chrefliterals)
     def("findLiterals", &findLiterals);
     def("replaceLiterals", &replaceLiterals);
 }
-
