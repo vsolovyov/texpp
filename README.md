@@ -68,6 +68,7 @@ Additionally, to make compilation faster, you can force `b2` to use maximum avai
 To run library tests also type 
 
 ```bash
+  export BOOST_TEST_CATCH_SYSTEM_ERRORS="no"
   make tests
 ```
 
