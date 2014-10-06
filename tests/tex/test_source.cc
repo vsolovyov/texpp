@@ -45,38 +45,11 @@ void test_usage()
                 "Usage: test_tex file1 file2 ..." );
 }
 
-/*
-vector<string> read_log_file(const string& fname)
-{
-    vector<string> res;
-    ifstream file(fname.c_str());
-
-    BOOST_REQUIRE_MESSAGE( file.good(), "Can not open output file");
-
-    char buf[1024]; int n = 0;
-    while(file.good()) {
-        buf[0] = 0;
-        file.getline(buf, sizeof(buf));
-
-        if(buf[0] == '>' || buf[0] == '!' || buf[0] == '~') {
-            n = 1;
-        } else if(buf[0] == 'l' && buf[1] == '.') {
-            n = 2;
-        }
-
-        if(n) {
-            res.push_back(string(buf));
-            --n;
-        }
-    }
-
-    return res;
-}*/
-
 void test_source(const char* testfile)
 {
     string jobname(testfile);
 
+    // extract input file name(cut "path/to/file" and extestion ".tex")
     size_t n = jobname.rfind(PATH_SEP);
     if(n != jobname.npos)
         jobname = jobname.substr(n+1);
@@ -87,24 +60,28 @@ void test_source(const char* testfile)
     shared_ptr<std::istream> file(new std::ifstream(testfile, std::fstream::in));
     BOOST_REQUIRE_MESSAGE( !file->fail(), "Can not open input file" );
 
+    // get length of file
     file->seekg(0, std::ios::end);
     size_t fileSize = file->tellg();
     file->seekg(0, std::ios::beg);
 
-    char* buf = new char[fileSize+1];
-    buf[fileSize] = 0;
-    file->read(buf, fileSize);
+    char* buffer = new char[fileSize+1];
+    buffer[fileSize] = 0;   // add null termination at the end of file
+
+    // read data
+    file->read(buffer, fileSize);
     file->seekg(0, std::ios::beg);
 
-    string origSource(buf);
+    string origSource(buffer);
 
-    vector<string> origSourceLines;
+  vector<string> origSourceLines; // vector for record splited text
+    // split origSource into lines. Move the result to origSourceLines;
     boost::split(origSourceLines, origSource, boost::is_any_of("\n"));
 
-    Parser parser(testfile, file, "", false, false,
-                    Logger::ptr(new NullLogger));
+    Parser parser(testfile, file, "", false, false, Logger::ptr(new NullLogger));
     Node::ptr document = parser.parse();
     
+    // recover source TeX text for the document
     string source = document->source(testfile);
 
     vector<string> sourceLines;
@@ -113,32 +90,18 @@ void test_source(const char* testfile)
     //BOOST_CHECK_EQUAL_COLLECTIONS(
     //    sourceLines.begin(), sourceLines.end());
     //    origSourceLines.begin(), origSourceLines.end(),
+
+    // compare collection
     BOOST_CHECK_EQUAL(source, origSource);
 
+    // write
     std::ofstream outFileOrig((jobname+".src").c_str());
     outFileOrig.write(origSource.c_str(), origSource.size());
 
     std::ofstream outFile((jobname+".src.pp").c_str());
     outFile.write(source.c_str(), source.size());
 
-    delete[] buf;
-    /*
-    string cmd1 = string(tex_executable)
-                    + " -ini -interaction nonstopmode"
-                    + " '" + testfile + "' > " + DEV_NULL;
-
-    string cmd2 = string(texpp_executable)
-                    + " '" + testfile + "' > '" + log_texpp + "'";
-
-    system(cmd1.c_str());
-    system(cmd2.c_str());
-
-    vector<string> log_tex_l = read_log_file(log_tex);
-    vector<string> log_texpp_l = read_log_file(log_texpp);
-
-    BOOST_CHECK_EQUAL_COLLECTIONS(log_tex_l.begin(), log_tex_l.end(),
-                              log_texpp_l.begin(), log_texpp_l.end());
-    */
+    delete[] buffer;
 }
 
 boost::unit_test::test_suite*
