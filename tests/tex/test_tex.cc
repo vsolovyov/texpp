@@ -39,6 +39,7 @@ const char* texpp_executable;
 #define DEV_NULL "/dev/null"
 #endif
 
+// terminator with message concerning wrong form of the test call
 void test_usage()
 {
     BOOST_FAIL( "Wrong number of command line arguments\n"
@@ -46,6 +47,12 @@ void test_usage()
                 " <texpp_executable> file1 file2 ..." );
 }
 
+/**
+ * @brief   read_log_file - filter logfile from meaningless strings to unify
+ *              log-output from TeX and TeXpp
+ * @param   fname - logfile name
+ * @return  filtered logfile in form of list (one line = one list entry)
+ */
 vector<string> read_log_file(const string& fname)
 {
     vector<string> res;
@@ -53,7 +60,7 @@ vector<string> read_log_file(const string& fname)
 
     BOOST_REQUIRE_MESSAGE( file.good(), "Can not open output file");
 
-    char buf[1024]; int n = 0;
+    char buf[1024]={0}; int n = 0;
     while(file.good()) {
         buf[0] = 0;
         file.getline(buf, sizeof(buf));
@@ -77,11 +84,13 @@ vector<string> read_log_file(const string& fname)
             n = 1;
         }
 
+        // store
         if(n) {
             res.push_back(string(buf));
             --n;
         }
 
+        // read file untill the \end command
         if(buf[0] == '{' && std::strlen(buf) >= 6 &&
                     std::strcmp(buf+std::strlen(buf)-5, "\\end}") == 0) {
             break;
@@ -90,6 +99,7 @@ vector<string> read_log_file(const string& fname)
 
     return res;
 }
+
 
 void test_tex(const char* testfile)
 {
@@ -102,22 +112,27 @@ void test_tex(const char* testfile)
     if(n != jobname.npos)
         jobname = jobname.substr(0, n);
 
-    string log_tex = jobname + ".log";
-    string log_texpp = jobname + ".log.pp";
+    string log_tex = jobname + ".log";      // TeX logfile name
+    string log_texpp = jobname + ".log.pp"; // TeXpp logfile name
 
+    // create a system commands for producing logfiles
+    // TeX. Logfile producing automatically. Supress console output
     string cmd1 = string(tex_executable)
                     + " -ini -interaction nonstopmode"
                     + " '" + testfile + "' > " + DEV_NULL;
-
+    // TeXpp. Move console output into Texpp logfile.
     string cmd2 = string(texpp_executable)
                     + " '" + testfile + "' > '" + log_texpp + "'";
 
-    system(cmd1.c_str());
-    system(cmd2.c_str());
+    // Execute system commands
+    system(cmd1.c_str());   // TeX
+    system(cmd2.c_str());   // TeXpp
 
+    // Unifying of logfiles
     vector<string> log_tex_l = read_log_file(log_tex);
     vector<string> log_texpp_l = read_log_file(log_texpp);
 
+    // compare logfiles
     if(jobname.substr(0, 5) == "fail_") {
         BOOST_CHECK(log_tex_l != log_texpp_l);
     } else {
@@ -126,9 +141,11 @@ void test_tex(const char* testfile)
     }
 }
 
+// start point to run test
 boost::unit_test::test_suite*
 init_unit_test_suite( int argc, char* argv[] ) 
 {
+    // usualy we have 4 argument: own_prorgam_name, tex, texpp, inputfile.tex
     if(argc < 3) {
         boost::unit_test::framework::master_test_suite().
             add( BOOST_TEST_CASE( &test_usage ) );
