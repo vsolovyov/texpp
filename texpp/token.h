@@ -160,12 +160,12 @@ protected:
     Type        m_type;     // type of token
     CatCode     m_catCode;  // category code whitch token refer to
     string      m_value;    // described expression meaning (semantic)
-    string      m_source;   // described expression
+    string      m_source;   // described expression (souce text)
 
     size_t      m_linePos;  // total number of symbols above current line
     size_t      m_lineNo;   // line number (in source file)
-    size_t      m_charPos;  // position of teken`s begin (on current line)
-    size_t      m_charEnd;  // position of teken`s end (on current line)
+    size_t      m_charPos;  // position of tekon`s begin (on current line)
+    size_t      m_charEnd;  // position of token`s end (on current line)
 
     bool        m_lastInLine;   // ID: this is the last Token in the line
 

@@ -53,6 +53,12 @@ public:
 
     Node(const string& type): m_type(type) {}
 
+    /**
+     * @brief source - recover input source TeX file for this node
+     * @param fileName - name of input TeX source file. Tokens in this node wich
+     *      came from file with different name will not be represented here
+     * @return string whitch is initial input TeX text within this actual node
+     */
     string source(const string& fileName = string()) const;
     unordered_map<shared_ptr<string>, string> sources() const;
     std::set<shared_ptr<string> > files() const;
@@ -69,8 +75,8 @@ public:
 
     const any& valueAny() const { return m_value; }
 
-    /** return def       if types of def and m_value is different
-     *  return m_value   if types of def and m_value is equal
+    /** return def       if types of def and m_value are different
+     *  return m_value   if types of def and m_value are equal
      */
     template<typename T>
     T value(T def) const {
@@ -123,7 +129,7 @@ public:
 
 protected:
     string                  m_type;     // type of token inside
-    any                     m_value;    // main object in node
+    any                     m_value;    // main object in the node
     vector< Token::ptr >    m_tokens;   // set of tokens inside node.
     ChildrenList            m_children; // token node list one level lower
                                         // in the hierarchy
@@ -132,11 +138,12 @@ protected:
 class Parser
 {
 public:
-    enum Interaction { ERRORSTOPMODE,
+    enum Interaction { ERRORSTOPMODE,   // do not stop when error
                        SCROLLMODE,
                        NONSTOPMODE,
                        BATCHMODE };
-// list of modes for execution processor
+
+    // list of modes for execution processor
     enum Mode { NULLMODE,
                 VERTICAL,   // vertical lists are broken into pages
                 HORIZONTAL, // horizontal lists are broken into paragraphs
@@ -144,9 +151,9 @@ public:
                 RHORIZONTAL,
                 MATH,       // formulas are built out of math lists
                 DMATH };
-    enum GroupType { GROUP_DOCUMENT,
-                     GROUP_NORMAL,
-                     GROUP_SUPER,
+    enum GroupType { GROUP_DOCUMENT,    // scope - the document, highest scope
+                     GROUP_NORMAL,      // inside curve brackets {...}
+                     GROUP_SUPER,       // inside quotes "..."
                      GROUP_MATH,        // inside formula $...$
                      GROUP_DMATH,
                      GROUP_CUSTOM };
@@ -181,36 +188,52 @@ public:
 
     bool hasOutput() const { return m_hasOutput; }
 
+    /**
+     * @brief if "tracingcommands" control command was set to positive int ( >0)
+     * @param token
+     * @param expanding
+     */
     void traceCommand(Token::ptr token, bool expanding = false);
 
     //////// Tokens
+
+    /**
+     * @brief lastToken return the last not skiped token
+     * @return pointer to the last not skiped token
+     */
     Token::ptr lastToken();
 
     /**
-     * @brief   put all next tokens to m_tokenSourse list untill real token
-     * @return  next real(no skipped) token
+     * @brief puts forthcoming tokens till first real token into m_tokenSourse
+     * list. Return first real token
+     * @expand
+     * @return first forthcoming real(no skipped) token
      */
     Token::ptr peekToken(bool expand = true);
 
     /**
-     * @brief   insert tokens from m_tokenSource into argument tokenVector,
+     * @brief   insert tokens from m_tokenSource to tokenVector,
      *          update m_lineNo
      *          clean m_tokenSource and m_token
-     * @return  actual real (no TOK_SKIPPED) token
+     * @return  m_token value if m_tokenSource is not empty. Otherwise use
+     *          peekToken() to get next real token
      */
     Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
                          bool expand = true);
 
     /**
-     * @brief copy considered tokens from m_tokenSource to m_tokenQueue
-     *        copy considered tokens from m_tokenSource to tokenVector
-     * clean m_tokenSource and m_token
+     * @brief copy tokens from m_tokenSource with tokenVector to m_tokenQueue;
+     *        clean m_tokenSource and m_token
      */
     void pushBack(vector< Token::ptr >* tokenVector);
 
     // void setNoexpand(Token::ptr token) { m_noexpandToken = token; }
     void addNoexpand(Token::ptr token) { m_noexpandTokens.insert(token); }
 
+    /**
+     * @brief move tokens from m_tokenSource to m_tokenQueue
+     *      clear m_noexpandTokens, m_tokenSource and m_token
+     */
     void resetNoexpand() { m_noexpandTokens.clear(); pushBack(NULL); }
 
     void input(const string& fileName, const string& fullName);
@@ -286,12 +309,17 @@ public:
      * @brief insert <value> to m_symbols table with tag <name>
      * @param name - tag for <value>
      * @param value - value to be inserted to m_symbols table
+     * @param global: false - set valid only within current scope,
+     *                true  - set valid for a whole document
      */
     void setSymbol(const string& name, const any& value, bool global = false);
 
-    /** @brief insert <value> to m_symbols table with tag moved from token
-     *  @param token - source for tag. tag is token semantic
+    /** @brief in case the token is control command - register token's symbol
+     *      combination(command) in m_symbols table
+     *  @param token - source for tag. tag is token's semantic
      *  @param value - value to be inserted to m_symbols table
+     *  @param global: false - set valid only within current scope,
+     *                 true  - set valid for a whole document
      */
     void setSymbol(Token::ptr token, const any& value, bool global = false) {
         if(token && token->isControl())
@@ -334,6 +362,11 @@ public:
         m_customGroupBegin = true; m_customGroupType = type; beginGroup(); }
     void endCustomGroup() { endGroup(); m_customGroupEnd = true; }
 
+    /**
+     * @brief return escape character
+     * @return escape character in string format
+     */
+    // TODO: manage e==0 case
     string escapestr() const {
         int e = symbol("escapechar", int(0));
         return e >= 0 && e <= 255 ? string(1, e) : string();
@@ -347,7 +380,18 @@ public:
 
 protected:
     void endinputNow();
+
+
+    // TODO: this method is huge. So, documentation should be complited by time
+    /**
+     * @brief rawExpandToken make expading of command. If the command is not
+     *      a Macro - return null Node pointer...
+     * @param token - command token to be expanded.
+     * @return null Node pointer if command is not a Macro. Otherwise return
+     * expanding of Macro...
+     */
     Node::ptr rawExpandToken(Token::ptr token);
+
     /**
      * @brief read and return next token be it skipped or no
      * @return next token
@@ -357,7 +401,10 @@ protected:
                           bool sElse = false, bool sOr = false);
     void setSpecialSymbol(const string& name, const any& value);
 
-    /** data initialising of parser whitch are necessary for plane text parsing
+    /**
+     * @brief initialising of m_symbols by control comands and control
+     * variables. Filling m_catCodeTable lookup table for all 256 possible char
+     * values (char <-> category code). Appending time to the banner.
      */
     void init();
 
@@ -383,12 +430,14 @@ protected:
     shared_ptr<Lexer>   m_lexer;
     shared_ptr<Logger>  m_logger;
 
-    Token::ptr      m_token;    // current token (in process)
-    Token::list     m_tokenSource;
+    Token::ptr      m_token;        // current token (in process)
+    Token::list     m_tokenSource;  // token "history" with actuand token at
+                                    // the end if list
 
-    Token::ptr      m_lastToken;
+    Token::ptr      m_lastToken;    // the last not skiped token
     TokenSet        m_noexpandTokens;
-    TokenQueue      m_tokenQueue;       // QUESTION: for witch purpose it serve?
+    TokenQueue      m_tokenQueue;   // token's buffer whitch is top priority for
+                                    // rawNextToken() to get token
 
     int             m_groupLevel;
     bool            m_end;
@@ -402,8 +451,7 @@ protected:
         int  value;
         int  branch;
     };
-    vector< ConditionalInfo >
-                    m_conditionals;
+    vector<ConditionalInfo> m_conditionals;
 
     typedef unordered_map<
         string, pair< int, any >
@@ -413,17 +461,17 @@ protected:
         pair<string, pair<int, any> >
     > SymbolStack;
 
-    SymbolTable     m_symbols;
+    SymbolTable     m_symbols;      // dictionary of known symbols and commands
     SymbolStack     m_symbolsStack;
     vector<size_t>  m_symbolsStackLevels;
 
-    size_t          m_lineNo;   // current linie in file
-    Mode            m_mode;
-    Mode            m_prevMode;
+    size_t          m_lineNo;   // current line number in file
+    Mode            m_mode;     // current mode for TeXpp's "state automat"
+    Mode            m_prevMode; // previous mode for TeXpp's "state automat"
 
     bool            m_hasOutput;
 
-    GroupType       m_currentGroupType;
+    GroupType       m_currentGroupType; // current group type
 
     string  m_customGroupType;
     bool    m_customGroupBegin;

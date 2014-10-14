@@ -13,7 +13,7 @@
 
     You should have received a copy of the GNU Lesser General Public
     License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
 #include <texpp/parser.h>
@@ -273,15 +273,16 @@ void Parser::init()
     base::initSymbols(*this);
     
     string banner = BANNER;
-    if(!lexer()->interactive()) {   // if we not if the interactive console mode
+    // add time to the banner
+    if(!lexer()->interactive()) {   // if we not in the interactive console mode
         char t[256];    // buffer
         time_t tt = std::time(NULL);
         std::strftime(t, sizeof(t), " %e %b %Y %H:%M", std::localtime(&tt));
         string ts(t);
         boost::algorithm::to_upper(ts);
-        banner += ts;           // add time to banner
+        banner += ts;
     }
-    // write info in banner to console
+    // print the banner in console
     m_logger->log(Logger::WRITE, banner, *this, Token::ptr());
 }
 
@@ -341,6 +342,10 @@ void Parser::setSpecialSymbol(const string& name, const any& value)
     }
 }
 
+/**
+ * @brief beginGroup - increases group level.
+ * TODO: complete description
+ */
 void Parser::beginGroup()
 {
     m_symbolsStackLevels.push_back(m_symbolsStack.size());
@@ -473,23 +478,28 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
             return Node::ptr();
     }
 
+    // extract command from the token
     Command::ptr cmd = symbol(token, Command::ptr());
+
+    // try to cast cmd to Macro. If cmd isn't belong to the Macro class -
+    // dynamic_pointer_cast will return NULL pointer
     Macro::ptr macro = dynamic_pointer_cast<Macro>(cmd);
 
-    if(cmd && !macro)       // if token is command and isn`t macro define?
-        return Node::ptr(); // skip all commands except macro defines
+    // return null-Nude if cmd is command but not a macro command
+    if(cmd && !macro)
+        return Node::ptr();
 
+    /// Macro
     Node::ptr node(new Node("macro"));
     Node::ptr child(new Node("control_token"));
-    child->tokens().push_back(token);   // push token to child node tokens vector
-    child->setValue(token);             // init child node m_value by token
+    child->tokens().push_back(token);  // put token to the child node
+    child->setValue(token);            // init child node's m_value by token
     node->appendChild("control_sequence", child);   // add chind to node
-    bool expanded = true;       // QUESTION: expand only macro defines
+    bool expanded = true;
     
-    pushBack(NULL);             // clean m_tokenSource and m_token
+    pushBack(NULL); // move m_tokenSource to m_tokenQueue. clean and m_token
 
-    // QUESTION: I do not understand nor coditional nor traceCommand
-    // usualy traceCommand command do nothing
+    // QUESTION: I do not understand  coditional
     if(m_conditionals.empty() || m_conditionals.back().active)
         traceCommand(token, true);
 
@@ -634,16 +644,17 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
     } else {
         // At this point the rawNextToken may be called recursively
         m_commandStack.push_back(macro);
-        macro->expand(*this, node);
+        macro->expand(*this, node);     // expand command, append result to node
         m_commandStack.pop_back();
         pushBack(NULL);
-
     }
 
     // TODO: the next lines is horible. Either Node::value should return
     //       a reference or the value itself should be Token::list_ptr.
     Token::list_ptr newTokens = node->value(Token::list_ptr());
     if(!newTokens) newTokens = Token::list_ptr(new Token::list());
+    // add some interesting token to the newTokens list
+    // this token have m_source - received from the node, lexer's file name !!!
     newTokens->insert(newTokens->begin(),
                 Token::create(
                     expanded ? Token::TOK_SKIPPED : token->type(),
@@ -662,6 +673,7 @@ Token::ptr Parser::rawNextToken(bool expand)
     Token::ptr token;
 
     while(true) {
+        // chek m_tokenQueue. If it isn't empty extract one front token
         if(!m_tokenQueue.empty()) {
             token = m_tokenQueue.front();
             m_tokenQueue.pop_front();
@@ -673,7 +685,7 @@ Token::ptr Parser::rawNextToken(bool expand)
 
             token = m_lexer->nextToken();   // read next token
             if(token && !token->isSkipped())// if token is not skipped
-                m_lastToken = token;        // remember token
+                m_lastToken = token;        // remember token as the last real
 
             if(!m_inputStack.empty()) {
                 if(!token) {
@@ -687,21 +699,23 @@ Token::ptr Parser::rawNextToken(bool expand)
         break;
     }
 
+    // NOTE: this is only the part of program where "expand" variable is used
     if(token && token->isControl() && expand &&
                 m_noexpandTokens.count(token) == 0) {
         Node::ptr node = rawExpandToken(token);
         if(node) {
+            // get node value. It is not a children content!!!
             Token::list_ptr newTokens = node->value(Token::list_ptr());
             assert(newTokens && !newTokens->empty());
 
-            Token::list::reverse_iterator rend = newTokens->rend();
-            Token::list::reverse_iterator it = newTokens->rbegin();
-            for(; it+1 != rend; ++it) {
-                assert((*it)->source().empty());
-                m_tokenQueue.push_front(*it);
+            Token::list::reverse_iterator rIterEnd = newTokens->rend();
+            Token::list::reverse_iterator rIter = newTokens->rbegin();
+            for(; rIter+1 != rIterEnd; ++rIter) {
+                assert((*rIter)->source().empty());
+                m_tokenQueue.push_front(*rIter);
             }
-            if(it != rend)
-                token = *it;
+            if(rIter != rIterEnd)
+                token = *rIter;
         }
     }
     return token;
@@ -713,6 +727,7 @@ Token::ptr Parser::nextToken(vector< Token::ptr >* tokenVector, bool expand)
         peekToken(expand);
 
     if(tokenVector) {
+        // insert content of m_tokenSource to the tokenVector
         tokenVector->insert(tokenVector->end(),
                 m_tokenSource.begin(), m_tokenSource.end());
     }
@@ -828,7 +843,7 @@ Token::ptr Parser::peekToken(bool expand)
             m_logger->log(Logger::ERROR,            // write error to log
                 "Text line contains an invalid character", *this, token);
         }
-        tokenSource.push_back(token);  // push all skipped tokens to tokenSource
+        tokenSource.push_back(token); // put skipped tokens with real at the end
     }
 
     // real token
@@ -836,7 +851,7 @@ Token::ptr Parser::peekToken(bool expand)
     if(token) {
         //if(token->lineNo())
         //    m_lastToken = token;
-        tokenSource.push_back(token);   //fill tokenSource by this token
+        tokenSource.push_back(token);   // add token to the end of tokenSource
     }
 
     // XXX
@@ -863,9 +878,8 @@ Token::ptr Parser::peekToken(bool expand)
     }
     */
 
-    // erasing m_tokenSource and m_token
+    // update m_tokenSource and m_token by mtoken and tokenSource
     pushBack(NULL); // peekToken may be called recursively
-
     m_token = mtoken;
     m_tokenSource = tokenSource;
 
@@ -2402,7 +2416,7 @@ Node::ptr Parser::parseGroup(GroupType groupType)
                             node->appendChild("extra_endgroup", parseToken());
                         }
                     }
-                } else {    // nor Begingroup nor Endgroup
+                } else {    // nor Begingroup nor Endgroup command
                     Mode prevMode = mode();
                     cmd->presetMode(*this);
                     if(mode() != prevMode)
@@ -2426,7 +2440,8 @@ Node::ptr Parser::parseGroup(GroupType groupType)
                             break;
                         } else {
                             logger()->log(Logger::ERROR,
-                                "Extra " + cmd->texRepr(this), *this, lastToken());
+                                          "Extra " + cmd->texRepr(this),
+                                          *this, lastToken());
                         }
                     } else {
                         node->appendChild("control", cmdNode);

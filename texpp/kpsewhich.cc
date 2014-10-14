@@ -31,10 +31,13 @@ namespace texpp {
 
 std::string kpseextend(const std::string& fname)
 {
-    size_t n = fname.rfind(PATH_SEP);   // find position of rigth path separator
-    // find position of '.' in file name assuming before .tex description
-    size_t n1 = fname.substr(n == fname.npos ? 0 : n).rfind('.');
-    return n1 == fname.npos ? (fname + ".tex") : fname; // add
+    // find file name begin position
+    size_t nameStartPos = fname.rfind(PATH_SEP) == fname.npos ?
+                                                    0 : fname.rfind(PATH_SEP);
+    // find dot position(before extention)
+    size_t extensionDotPos = fname.substr(nameStartPos).rfind('.');
+    // append ".tex" to the end of fname if no extesion yet
+    return extensionDotPos == fname.npos ? (fname + ".tex") : fname;
 }
 
 std::string kpsewhich(const std::string& fname, const std::string& dir)

@@ -48,17 +48,17 @@ bool TokenCommand::invoke(Parser&, shared_ptr<Node> node)
 
 Token::list_ptr Macro::stringToTokens(const string& str)
 {
-    Token::list_ptr ret(new Token::list());
+    Token::list_ptr returnValue(new Token::list());
 
     BOOST_FOREACH(char ch, str) {
-        Token::CatCode catcode = Token::CC_OTHER;
-        if(ch == ' ') catcode = Token::CC_SPACE;
-
-        ret->push_back(Token::create(
-            Token::TOK_CHARACTER, catcode, string(1, ch)));
+        Token::CatCode catcode = (ch == ' ') ? Token::CC_SPACE :
+                                               Token::CC_OTHER;
+        returnValue->push_back(Token::create(Token::TOK_CHARACTER,
+                                     catcode,
+                                     string(1, ch)));
     }
 
-    return ret;
+    return returnValue;
 }
 
 } // namespace texpp

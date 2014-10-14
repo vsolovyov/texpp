@@ -41,6 +41,12 @@ public:
     const string& name() const { return m_name; }
 
     virtual string repr() const;
+
+    /**
+     * @brief represent command name m_name in string
+     * @param parser - using to obtain certain escape symbol
+     * @return - name of command in string format
+     */
     virtual string texRepr(Parser* parser = NULL) const;
 
     virtual bool invoke(Parser&, shared_ptr<Node>) { return true; }

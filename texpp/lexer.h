@@ -44,7 +44,11 @@ public:
     bool interactive() const { return m_interactive; }
 
     string jobName() const;
+
+    // fileName valude getter
     const string& fileName() const { return *m_fileName; }
+
+    // fileName pointer getter
     shared_ptr<string> fileNamePtr() const { return m_fileName; }
 
     size_t linePos() const { return m_linePos; }
