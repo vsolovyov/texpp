@@ -53,14 +53,19 @@ shared_ptr<Parser> create_parser(const string& input)
                     shared_ptr<Logger>(new TestLogger)));
 }
 
+// "parser token test" handles letters and commands in the input.
+// Here we test behavior of the parser based on peekToken(), lastToken() and
+// nextToken() methods. See description of methods in parser.h file.
 BOOST_AUTO_TEST_CASE( parser_tokens )
 {
     shared_ptr<Parser> parser = create_parser("  a %  \n  \\bb\\ \\c");
     BOOST_CHECK_EQUAL(parser->lastToken(), Token::ptr());
+
     BOOST_CHECK_EQUAL(parser->peekToken()->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 2, 3).repr());
     BOOST_CHECK_EQUAL(parser->peekToken()->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 2, 3).repr());
+
     BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 2, 3).repr());
     /*BOOST_CHECK_EQUAL(parser->peekToken(1)->repr(),
@@ -80,20 +85,25 @@ BOOST_AUTO_TEST_CASE( parser_tokens )
     BOOST_CHECK_EQUAL(parser->peekToken()->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", " ", 0, 1, 3, 4).repr());
 
+    // copy content of m_tokenSource and tokens_t to m_tokenQueue
+    // clean m_tokenSource
+    // last Token stay the same
+    // the result should be as if we didn't read tokens in m_tokenQueue yet
     parser->pushBack(&tokens_t);
     BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", " ", 0, 1, 3, 4).repr());
-
     BOOST_CHECK_EQUAL(parser->peekToken()->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 2, 3).repr());
     BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", " ", 0, 1, 3, 4).repr());
 
     tokens_t.clear();
+    // m_tokenSource is not empty -> return parser.m_token and free m_tokenSource
     token0 = parser->nextToken(&tokens_t);
     BOOST_CHECK_EQUAL(token0->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 2, 3).repr());
 
+    // now m_tokenSource empty -> read nex token, free m_tokenSource
     token0 = parser->nextToken(&tokens_t);
     BOOST_CHECK_EQUAL(token0->repr(),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", " ", 0, 1, 3, 4).repr());
@@ -110,6 +120,7 @@ BOOST_AUTO_TEST_CASE( parser_tokens )
     BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
         Token(Token::TOK_CONTROL, Token::CC_ESCAPE, "\\bb", "\\bb", 8, 2, 2, 5).repr());
 
+    // not skipped tokens only!!!!
     Token tokens[] = {
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 2, 3),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", " ", 0, 1, 3, 4),
@@ -118,6 +129,11 @@ BOOST_AUTO_TEST_CASE( parser_tokens )
         Token(Token::TOK_CONTROL, Token::CC_ESCAPE, "\\c", "\\c", 8, 2, 7, 9),
     };
 
+    // sequence of tokens which correspond to "get next real token" rules.
+    // peekToken() command proces input text till NOT_SKIPPED token;
+    // skipped tokens including the last real token go to the m_tokenSource
+    // buffer. So this multidimention array is sequence of m_tokenSource
+    // collections in fact
     Token tokens_all[][5] = {
         {
             Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", "  ", 0, 1, 0, 2),
@@ -142,12 +158,14 @@ BOOST_AUTO_TEST_CASE( parser_tokens )
     size_t n = 0;
     while(token = parser->peekToken(false)) {
         vector<Token::ptr> output_all;
+        // first time n=0, parser lat token is "\\bb"
         BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
             n < 3 ? Token(Token::TOK_CONTROL, Token::CC_ESCAPE,
                         "\\bb", "\\bb", 8, 2, 2, 5).repr()
                     : token->repr());
 
         //token1 = parser->peekToken(2);
+        // move tokens from parser.m_tokenSource to output_all (buffer cleaning)
         token2 = parser->nextToken(&output_all, false);
 
         BOOST_CHECK_EQUAL(token->repr(), token2->repr());
@@ -161,35 +179,46 @@ BOOST_AUTO_TEST_CASE( parser_tokens )
         else
             BOOST_CHECK_EQUAL(Token::ptr(), parser->peekToken());*/
 
+        // n - "counter" for the tokens array {0,1,...tokens.length()}
         if(n < sizeof(tokens)/sizeof(Token)) {
             vector<string> output_all_repr(output_all.size());
             vector<string> tokens_all_repr(tokens_all_counts[n]);
 
+            // make text representing for every token in output_all, put the
+            // result into output_all_repr
             std::transform(output_all.begin(), output_all.end(),
                     output_all_repr.begin(),
                     boost::lambda::bind(&Token::repr, *boost::lambda::_1));
 
+            // make the same for tokens_all
             std::transform(tokens_all[n], tokens_all[n] + tokens_all_counts[n],
                     tokens_all_repr.begin(),
                     boost::lambda::bind(&Token::repr, boost::lambda::_1));
 
+            // check is they the same as was predicted
             BOOST_CHECK_EQUAL_COLLECTIONS(
                     tokens_all_repr.begin(), tokens_all_repr.end(),
                     output_all_repr.begin(), output_all_repr.end());
         }
         
+        // represent all real tokens in output_repr vector
         output_repr.push_back(token->repr());
         ++n;
     }
     
+    // create vector with the same dimention as the tokens array
     vector<string> tokens_repr(sizeof(tokens)/sizeof(Token));
+    // represent all prediction for real tokens in tokens_repr vector
     std::transform(tokens, tokens + tokens_repr.size(), tokens_repr.begin(),
                     boost::lambda::bind(&Token::repr, boost::lambda::_1));
-
+    // compare TeXpp real token collection vs predicted token collection
     BOOST_CHECK_EQUAL_COLLECTIONS(tokens_repr.begin(), tokens_repr.end(),
                                   output_repr.begin(), output_repr.end());
 }
 
+// scope test
+// Local settings should be true only within actual scope.
+// Global settings valid everywhere no matter where they was published
 BOOST_AUTO_TEST_CASE( parser_symbols )
 {
     shared_ptr<Parser> parser = create_parser("");
@@ -214,13 +243,13 @@ BOOST_AUTO_TEST_CASE( parser_symbols )
     parser->setSymbol("a", 2);
     BOOST_CHECK_EQUAL(2, parser->symbol("a", 0));
 
-    parser->setSymbol("a", 3, true);
+    parser->setSymbol("a", 3, true);    // global assignment
     BOOST_CHECK_EQUAL(3, parser->symbol("a", 0));
 
     parser->setSymbol("d", 5);
     BOOST_CHECK_EQUAL(5, parser->symbol("d", 0));
 
-    parser->setSymbol("e", 7, true);
+    parser->setSymbol("e", 7, true);    // global assignment
     BOOST_CHECK_EQUAL(7, parser->symbol("e", 0));
 
     parser->setSymbol("e", 8);
@@ -235,6 +264,7 @@ BOOST_AUTO_TEST_CASE( parser_symbols )
     BOOST_CHECK_EQUAL(7, parser->symbol("e", 0));
 }
 
+// here we can see an example of simple node tree representing
 BOOST_AUTO_TEST_CASE( parser_parse )
 {
     shared_ptr<Parser> parser = create_parser("abc{def}gh");
@@ -245,10 +275,20 @@ BOOST_AUTO_TEST_CASE( parser_parse )
     //std::cout << document->treeRepr();
 }
 
+// this macro command is an examle of macro definition whitch we test in
+// downstream BOOST_TEST. The expansion algorithm is main target to test here.
+// in short: \macro command with two forthcoming letter exchange to "89".
+// So "\\macro1234" converting into "8934"
 class TestMacro: public Macro
 {
 public:
     explicit TestMacro(const string& name): Macro(name) {}
+
+    // here expand() takes two forthcoming letters and store them in
+    // token1, token1a, token2, token2a tokens. With next distribution:
+    // 1st argument: -> token1, token1a;
+    // 2nd argument: -> token2, token2a;
+    // Concerning "89" - they move to the m_tokenQueue as real tokens.
     bool expand(Parser& parser, shared_ptr<Node> node)
     {
         Node::ptr child(new Node("args"));
@@ -272,24 +312,26 @@ public:
 
 BOOST_AUTO_TEST_CASE( parser_expansion )
 {
+    // create parser for "\\macro1234" input TeX text
     shared_ptr<Parser> parser = create_parser("\\macro1234");
+    // bind macro command functionality to "\\macro" string
     shared_ptr<TestMacro> macro(new TestMacro("\\macro"));
+    // register the macro command for the parser
     parser->setSymbol("\\macro", Command::ptr(macro));
 
+    // nothing yet processed
     BOOST_CHECK_EQUAL(parser->lastToken(), Token::ptr());
 
     Token::list tokens;
-    Token token;
+    Token token  = Token(Token::TOK_CHARACTER, Token::CC_OTHER, "8", "", 0, 0, 0, 0);
+    Token token3 = Token(Token::TOK_CHARACTER, Token::CC_OTHER, "3", "3", 0, 1, 8, 9);
 
-    token = Token(Token::TOK_CHARACTER, Token::CC_OTHER, "8", "", 0, 0, 0, 0);
     BOOST_CHECK_EQUAL(parser->peekToken()->repr(), token.repr());
-    BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
-            Token(Token::TOK_CHARACTER, Token::CC_OTHER, "3", "3", 0, 1, 8, 9).repr());
+    BOOST_CHECK_EQUAL(parser->lastToken()->repr(), token3.repr());
     BOOST_CHECK_EQUAL(parser->nextToken(&tokens)->repr(), token.repr());
-    BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
-            Token(Token::TOK_CHARACTER, Token::CC_OTHER, "3", "3", 0, 1, 8, 9).repr());
+    BOOST_CHECK_EQUAL(parser->lastToken()->repr(), token3.repr());
 
-    BOOST_CHECK_EQUAL(tokens.size(), 2);
+    BOOST_CHECK_EQUAL(tokens.size(), 2);    // "\macro12", "8"
     if(tokens.size() == 2) {
         BOOST_CHECK_EQUAL(tokens[0]->repr(),
             Token(Token::TOK_SKIPPED, Token::CC_ESCAPE,
@@ -311,11 +353,9 @@ BOOST_AUTO_TEST_CASE( parser_expansion )
     tokens.clear();
     token = Token(Token::TOK_CHARACTER, Token::CC_OTHER, "9", "", 0, 0, 0, 0);
     BOOST_CHECK_EQUAL(parser->peekToken()->repr(), token.repr());
-    BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
-            Token(Token::TOK_CHARACTER, Token::CC_OTHER, "3", "3", 0, 1, 8, 9).repr());
+    BOOST_CHECK_EQUAL(parser->lastToken()->repr(), token3.repr());  // "3"
     BOOST_CHECK_EQUAL(parser->nextToken(&tokens)->repr(), token.repr());
-    BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
-            Token(Token::TOK_CHARACTER, Token::CC_OTHER, "3", "3", 0, 1, 8, 9).repr());
+    BOOST_CHECK_EQUAL(parser->lastToken()->repr(), token3.repr());  // "3"
 
     BOOST_CHECK_EQUAL(tokens.size(), 1);
     if(tokens.size() == 1)
@@ -354,4 +394,3 @@ BOOST_AUTO_TEST_CASE( parser_expansion )
     if(tokens.size() == 1)
         BOOST_CHECK_EQUAL(tokens[0]->repr(), token.repr());
 }
-
