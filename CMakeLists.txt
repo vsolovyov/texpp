@@ -41,6 +41,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 # Subdirectories
 add_subdirectory(texpp)
 
+# originally boost_python_FOUND, but we have Python3
 if(Boost_FOUND)
     add_subdirectory(texpy)
     add_subdirectory(hrefkeywords)
