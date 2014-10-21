@@ -28,12 +28,20 @@
 
 using namespace texpp;
 
+// create lexer with <input> source text
+// input - source text
 shared_ptr<Lexer> create_lexer(const string& input)
 {
     shared_ptr<std::istream> ifile(new std::istringstream(input));
     return shared_ptr<Lexer>(new Lexer("", ifile, false));
 }
 
+/**
+ * @brief run_lexer - parse file in the lexer
+ * @param lexer - lexer which we use to parse source file. It is olready have
+ *      required info of source file
+ * @return vector of tokens from lexer
+ */
 std::vector<Token::ptr> run_lexer(shared_ptr<Lexer> lexer)
 {
     Token::ptr token;
@@ -44,15 +52,26 @@ std::vector<Token::ptr> run_lexer(shared_ptr<Lexer> lexer)
     return output;
 }
 
+/**
+ * @brief check_output compare the tokens with the output token's collection.
+ *          Print token representing in console
+ * @param tokens - Token array - 1st token collection
+ * @param count - size of <tokens> array
+ * @param output - vector of Token poiters - 2nd token collection
+ * @param print - boos switch. If true - print collection's representing
+ *          in console
+ */
 void check_output(Token* tokens, size_t count, vector<Token::ptr> output,
                         bool print=false)
 {
     using namespace boost::lambda;
     vector<string> tokens_repr(count);
+    // fill tokens_repr by token representing strings from the tokens array
     std::transform(tokens, tokens+count,
             tokens_repr.begin(), bind(&Token::repr, boost::lambda::_1));
 
     vector<string> output_repr(output.size());
+    // fill output_repr bt token representing strings from the output ptr vector
     std::transform(output.begin(), output.end(),
             output_repr.begin(), bind(&Token::repr, *boost::lambda::_1));
 
@@ -65,6 +84,7 @@ void check_output(Token* tokens, size_t count, vector<Token::ptr> output,
         output_repr.begin(), output_repr.end());
 }
 
+// check empty collection
 BOOST_AUTO_TEST_CASE( lexer_empty )
 {
     {
@@ -75,6 +95,14 @@ BOOST_AUTO_TEST_CASE( lexer_empty )
     }
 }
 
+// Newline, also known as a line ending, end of line (EOL), or line break, is a
+// special character or sequence of characters signifying the end of a line of
+// text. The actual codes representing a newline vary across operating systems,
+// which can be a problem. So, in this test we make unification EOL character
+// from '\n'(Unix OS) and "\r\n"(Windows OS) to certain m_endlinechar(which is
+// '\r' by default). Nevertheless single EOL characters in TeXpp act as word
+// separators. Only two consecutive EOL-characters ("\r\r") translate to newLine
+// command "\\par".
 BOOST_AUTO_TEST_CASE( lexer_physical_eol )
 {
     {
@@ -97,7 +125,7 @@ BOOST_AUTO_TEST_CASE( lexer_physical_eol )
 
     {
     shared_ptr<Lexer> lexer = create_lexer("a\rb\nc\r\nd\n\re");
-    lexer->setEndlinechar('A');
+    lexer->setEndlinechar('A'); // exchange '\r' EOL
     Token tokens[] = {
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 0, 1, 0, 1),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "A", "\r", 0, 1, 1, 2),
@@ -114,6 +142,8 @@ BOOST_AUTO_TEST_CASE( lexer_physical_eol )
     check_output(tokens, sizeof(tokens)/sizeof(Token), run_lexer(lexer));
     }
 
+    // If m_endlinechar is out of 0...255 value it should not be in m_lineTex
+    // at all
     {
     shared_ptr<Lexer> lexer = create_lexer("a\rb\nc\r\nd\n\re");
     lexer->setEndlinechar(-1);
@@ -193,6 +223,7 @@ BOOST_AUTO_TEST_CASE( lexer_special_chars )
         Token(Token::TOK_CHARACTER, Token::CC_SUPER, "^", "^", 0, 1, 12, 13),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", " ", 0, 1, 13, 14),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "M", "^^\n", 0, 1, 14, 17),
+
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "w", "^^7", 17, 2, 0, 3),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "z", "^^7a", 17, 2, 3, 7),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "w", "^^7", 17, 2, 7, 10),
@@ -200,15 +231,17 @@ BOOST_AUTO_TEST_CASE( lexer_special_chars )
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "w", "^^7", 17, 2, 11, 14),
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "z", "z", 17, 2, 14, 15),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", "\n", 17, 2, 15, 16),
+
         Token(Token::TOK_CHARACTER, Token::CC_SUPER, "^", "^^5e", 33, 3, 0, 4),
         Token(Token::TOK_CHARACTER, Token::CC_SUPER, "^", "^^5e", 33, 3, 4, 8),
         Token(Token::TOK_CHARACTER, Token::CC_OTHER, "7", "7", 33, 3, 8, 9),
-
         Token(Token::TOK_CHARACTER, Token::CC_LETTER, "a", "a", 33, 3, 9, 10),
         Token(Token::TOK_CHARACTER, Token::CC_SPACE, " ", "\n", 33, 3, 10, 11),
+
         Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", "^^20^^20", 44, 4, 0, 8),
         Token(Token::TOK_CONTROL, Token::CC_EOL, "\\par", "^^0d", 44, 4, 8, 12),
         Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", "^^20a\n", 44, 4, 12, 18),
+
         Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", "^^20^^`", 62, 5, 0, 7),
         Token(Token::TOK_CONTROL, Token::CC_EOL, "\\par", "^^M", 62, 5, 7, 10),
         Token(Token::TOK_SKIPPED, Token::CC_SPACE, " ", " x\n", 62, 5, 10, 13),
