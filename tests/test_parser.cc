@@ -275,9 +275,9 @@ BOOST_AUTO_TEST_CASE( parser_parse )
     //std::cout << document->treeRepr();
 }
 
-// this macro command is an examle of macro definition whitch we test in
+// this macro command is examle of macro definition whitch we test in
 // downstream BOOST_TEST. The expansion algorithm is main target to test here.
-// in short: \macro command with two forthcoming letter exchange to "89".
+// in short: \macro command with two next numbers exchange to "89".
 // So "\\macro1234" converting into "8934"
 class TestMacro: public Macro
 {
