@@ -11,7 +11,6 @@ set(_chrefliterals_SOURCES
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${ICU_INCLUDE_DIRS})
-include_directories(stem_include)
 
 add_library(_chrefliterals SHARED ${_chrefliterals_SOURCES})
 target_link_libraries(_chrefliterals libtexpp ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})

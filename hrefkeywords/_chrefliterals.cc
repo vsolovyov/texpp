@@ -20,18 +20,18 @@
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "english_stem.h"
-#include "french_stem.h"
-#include "german_stem.h"
-#include "finnish_stem.h"
-#include "swedish_stem.h"
-#include "spanish_stem.h"
-#include "dutch_stem.h"
-#include "danish_stem.h"
-#include "italian_stem.h"
-#include "norwegian_stem.h"
-#include "portuguese_stem.h"
-#include "russian_stem.h"
+#include "stem_include/english_stem.h"
+#include "stem_include/french_stem.h"
+#include "stem_include/german_stem.h"
+#include "stem_include/finnish_stem.h"
+#include "stem_include/swedish_stem.h"
+#include "stem_include/spanish_stem.h"
+#include "stem_include/dutch_stem.h"
+#include "stem_include/danish_stem.h"
+#include "stem_include/italian_stem.h"
+#include "stem_include/norwegian_stem.h"
+#include "stem_include/portuguese_stem.h"
+#include "stem_include/russian_stem.h"
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/filesystem.hpp>
@@ -63,11 +63,11 @@ public:
     WordsDict(string filename, size_t abbrMaxLen)
         : _abbrMaxLen(abbrMaxLen)
     {
-        // fill a fictonary of all words(lines) of input file
+        // fill dictonary by lines from input file
         std::ifstream wordsfile(filename.c_str());
         string word;
         while(wordsfile.good()) {
-            // QUESTION: every word is one line of file
+            // QUESTION: every word is one line of file ?
             std::getline(wordsfile, word);
             size_t s = word.size();
             if(s >= _abbrMinLen && s <= abbrMaxLen && word.substr(s-2) != "'s")  {
@@ -88,8 +88,8 @@ protected:
 };
 
 /**
- * @return true if ch is digit or '-' or '/' symbol,
- * otherwise return false
+ * @return true if ch is digit, '-' or '/' symbol;
+ *      otherwise return false
  */
 inline bool _isglue(wchar_t ch) {
     return iswdigit(ch) || ch == L'-' || ch == L'/';
@@ -97,7 +97,7 @@ inline bool _isglue(wchar_t ch) {
 
 /**
  * @return true if ch is space,'~' or '-' symbol
- * otherwise return false
+ *      otherwise return false
  */
 inline bool _isIgnored(wchar_t ch) {
     return ch == L'~' || ch == L'-' || ch == L'/' || iswspace(ch);
@@ -105,7 +105,7 @@ inline bool _isIgnored(wchar_t ch) {
 
 /**
  * @return true if word is article
- * otherwise return false
+ *      otherwise return false
  */
 inline bool _isIgnoredWord(const string& word) {
     return word == "the" || word == "a" || word == "an" ||
@@ -113,15 +113,15 @@ inline bool _isIgnoredWord(const string& word) {
 }
 
 /**
- * @brief wStrToStr - decompose word wstr from wide(multibyte)
- * characters String format (basic_string<wchar_t>) into
- * narrow(1 byte) character array (basic_string<char>)
+ * @brief wStrToStr - decompose word wstr from wide(multibyte) characters
+ *      String format (basic_string<wchar_t>) into narrow(1 byte) character
+ *      array (basic_string<char>)
  * @param wstr - string of wide characters
  * @param toLower - case convertor trigger
- * if true - translate to lower case all letters in wstr
- * if false - leave the word register as is
- * @return narrow character array where the multibyte characters
- * are stored consistently and separated by '\0' delimiter
+ *      if true - translate to lower case all letters in wstr
+ *      if false - leave the word register as is
+ * @return narrow character array where the multibyte characters are stored
+ *      consistently and separated by '\0' delimiter
  */
 string wStrToStr(std::wstring wstr, bool toLower=false)
 {
