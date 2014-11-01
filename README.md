@@ -2,7 +2,7 @@ The original project can be found here: [Texpp on the Google Code](http://code.g
 
 # Texpp
 
-Texpp is a threefold C++ library with a Python 3.4 interface containing:
+Texpp is a threefold C++ library with a Python interface containing:
 
 * Stemmer
 * Terms extractor
@@ -14,13 +14,15 @@ Each part offers a set of Python API methods. Internally the library is tightly 
 
 ## Installation
 
+During TeXpp installation you should specify version of Python(between 2 and 3). Сurrent version of Python avaliable to install from repository is 2.7 and 3.4. So, the recipy of installation TeXpp for certain version of Python is a bit different. Presumably installation make under Ubuntu 14.04 Trusty Tahr.
 
 ### Requirements:
 
+Here you can exclude one of Python version(Leave one of them: python3.4-dev or python2.7-dev).
 
 ```bash
   sudo apt-get update
-  sudo apt-get install git gcc g++ cmake libicu-dev python3.4-dev
+  sudo apt-get install git gcc g++ cmake libicu-dev python3.4-dev python2.7-dev
   sudo apt-get install libboost-dev libboost-filesystem-dev libboost-regex-dev libboost-python-dev libboost-test-dev
 ```
 
@@ -39,7 +41,17 @@ For Ubuntu 14.04 there is no Boost package for Python 3, so we have to compile i
   tar xzvf boost_1_56_0.tar.gz
   cd boost_1_56_0/
   sudo apt-get update
+```
+boost build configuration in case Python3:
+```bash
   ./bootstrap.sh --with-python=/usr/bin/python3 --with-python-root=/usr --prefix=/usr/local
+```
+boost build configuration in case Python2:
+```bash
+  ./bootstrap.sh --with-python=/usr/bin/python2 --with-python-root=/usr --prefix=/usr/local
+```
+start Boost installation:
+```bash
   sudo ./b2 --with=all install
   sudo sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/local.conf'
   sudo ldconfig
@@ -58,7 +70,24 @@ Additionally, to make compilation faster, you can force `b2` to use maximum avai
 ```bash
   git clone https://github.com/Domest0s/texpp.git
   cd texpp
-  git checkout portingToPython3
+```
+
+The CMakeLists.txt is different for different versions of Python, so you need to copy nesessary CMakeFiles.txt from CMakeListsFolder.
+in case Python2 type:
+
+```bash
+  cp CMakeListsFolder/CMakeListsPython2.txt CMakeLists.txt
+```
+
+in case Python3 type:
+
+```bash
+  cp CMakeListsFolder/CMakeListsPython3.txt CMakeLists.txt
+```
+
+build:
+
+```bash
   mkdir build
   cd build
   cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -71,8 +100,6 @@ To run library tests also type
   export BOOST_TEST_CATCH_SYSTEM_ERRORS="no"
   make tests
 ```
-
-*Note: many tests are failing at the moment. Working on it*
 
 ###	Linking
 
