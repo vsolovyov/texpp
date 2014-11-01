@@ -22,8 +22,9 @@ Here you can exclude one of Python version(Leave one of them: python3.4-dev or p
 
 ```bash
   sudo apt-get update
-  sudo apt-get install git gcc g++ cmake libicu-dev python3.4-dev python2.7-dev
-  sudo apt-get install libboost-dev libboost-filesystem-dev libboost-regex-dev libboost-python-dev libboost-test-dev
+  sudo apt-get install git gcc g++ cmake libicu-dev libboost-dev libboost-filesystem-dev libboost-regex-dev libboost-python-dev libboost-test-dev
+  # sudo apt-get install python2.7-dev
+  sudo apt-get install python3.4-dev
 ```
 
 Additionally, for testing purposes one can install also a TeX Live package (caution: it is an about **3 Gb** download)
@@ -51,18 +52,13 @@ boost build configuration in case Python2:
   ./bootstrap.sh --with-python=/usr/bin/python2 --with-python-root=/usr --prefix=/usr/local
 ```
 start Boost installation:
-```bash
-  sudo ./b2 --with=all install
-  sudo sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/local.conf'
-  sudo ldconfig
-```
-
 Additionally, to make compilation faster, you can force `b2` to use maximum available amount of cores:
-
 ```bash
   # Count available cores
   n=`cat /proc/cpuinfo | grep "cpu cores" | uniq | awk '{print $NF}'`
-  sudo ./b2 --with=all -j $n install
+  sudo ./b2 --with=all -a -j $n install
+  sudo sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/local.conf'
+  sudo ldconfig
 ```
 
 ###	Building the library
@@ -73,6 +69,7 @@ Additionally, to make compilation faster, you can force `b2` to use maximum avai
 ```
 
 The CMakeLists.txt is different for different versions of Python, so you need to copy nesessary CMakeFiles.txt from CMakeListsFolder.
+
 in case Python2 type:
 
 ```bash
