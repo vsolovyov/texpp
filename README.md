@@ -23,8 +23,8 @@ Here you can exclude one of Python version(Leave one of them: python3.4-dev or p
 ```bash
   sudo apt-get update
   sudo apt-get install git gcc g++ cmake libicu-dev libboost-dev libboost-filesystem-dev libboost-regex-dev libboost-python-dev libboost-test-dev
-  # sudo apt-get install python2.7-dev
   sudo apt-get install python3.4-dev
+  sudo apt-get install python2.7-dev
 ```
 
 Additionally, for testing purposes one can install also a TeX Live package (caution: it is an about **3 Gb** download)
@@ -38,9 +38,9 @@ Additionally, for testing purposes one can install also a TeX Live package (caut
 For Ubuntu 14.04 there is no Boost package for Python 3, so we have to compile it from the source.
 
 ```bash
-  wget -O boost_1_56_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.tar.gz/download
-  tar xzvf boost_1_56_0.tar.gz
-  cd boost_1_56_0/
+  wget -O boost_1_57_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.tar.gz/download
+  tar xzvf boost_1_57_0.tar.gz
+  cd boost_1_57_0/
   sudo apt-get update
 ```
 boost build configuration in case Python3:
@@ -95,7 +95,7 @@ To run library tests also type
 
 ```bash
   export BOOST_TEST_CATCH_SYSTEM_ERRORS="no"
-  make tests
+  make test
 ```
 
 ###	Linking
