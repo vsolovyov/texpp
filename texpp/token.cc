@@ -77,28 +77,21 @@ namespace texpp {
 
 string Token::EMPTY_STRING;
 
-string Token::texReprControl(const string& name,
-                        Parser* parser, bool space)
+string Token::texReprControl(const string& commandName,
+                             Parser* parser, bool space)
 {
-    string str(name);
+    string str(commandName);
     if(!str.empty()) {
-        if(str[0] == '\\') {
-            if(parser) {
-                string escape = parser->escapestr();
-                str = escape + str.substr(1);
-                if(str.size() == 1) {
-                    str += "csname" + escape + "endcsname";
-                }
-                if(space) {
-                    if(str.size() > 2) {
-                        str += ' ';
-                    } else { // str.size() always equals 2 in this case
-                        int cc = parser->symbol("catcode" +
-                            boost::lexical_cast<string>(int(str[1])), int(0));
-                        if(cc == Token::CC_LETTER)
-                            str += ' ';
-                    }
-                }
+        if(str[0] == '\\' && parser)
+        {
+            string escape = parser->escapestr();
+            str = escape + str.substr(1);
+            if(str.size() == 1) {
+                str += "csname" + escape + "endcsname";
+            }
+            if(space && (str.size() > 2 || Token::CC_LETTER == parser->symbol(
+                 "catcode" + boost::lexical_cast<string>(int(str[1])), int(0)))) {
+                str += ' ';
             }
         } else if(str[0] == '`') {
             str = str.substr(1);
