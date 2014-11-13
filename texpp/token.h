@@ -27,6 +27,16 @@ namespace texpp {
 class Parser;
 class Token;
 
+/**
+ * @brief The Token class designet to store single semantic objects used in
+ *  TeX text. Token class object contain all nesessary information about token
+ *  needed to be used for parsing TeX text:
+ * - type of token
+ * - category code
+ * - meaning of token
+ * - origin section of the text in the source text file;
+ * - location in file
+ */
 class Token
 {
 public:
@@ -35,35 +45,40 @@ public:
     typedef shared_ptr<list> list_ptr;
 
     enum Type {
-        TOK_SKIPPED,    // coments(%...), spaces,
-        TOK_CHARACTER,  // letters,\n,\r,{,},
-        TOK_CONTROL     // \par, \def, \usepakage
-                        // \draft,\documentclass,\setcitestyle,...
+        TOK_SKIPPED,    /*!< symbols whitch do not affect the outcome, skipped
+                            during processing: comments, extra spaces, single
+                            endline characters, ... */
+        TOK_CHARACTER,  /*!< characters whitch shown as is: letters, numbers,
+                            punctuations, spases */
+        TOK_CONTROL     //!< control sequences: commands, begin/end group, EOL,...
     };
 
 // Category for characters - separation of content
     enum CatCode {
-        CC_ESCAPE = 0,      // escape character "\"
-        CC_BGROUP = 1,      // Begin group: {
-        CC_EGROUP = 2,      // End group: }
-        CC_MATHSHIFT = 3,   // Math shift: $
-        CC_ALIGNTAB = 4,    // Alignment table: &       ->   \haign,\valign
-        CC_EOL = 5,         // End-of-line '\n'         ->   \endlinechar
-        CC_PARAM = 6,       // Parameter for macros: #
-        CC_SUPER = 7,       // Math superscript: ^
-        CC_SUB = 8,         // Math subscript: _
-        CC_IGNORED = 9,     // Ignored entirely         -> <null> character == 0
-        CC_SPACE = 10,      // Space
-        CC_LETTER = 11,     // Letters: the alphabet.
-        CC_OTHER = 12,      // 'Other' character - everything else: ., 1, :, etc.
-        CC_ACTIVE = 13,     // Active character - to be interpreted as control sequences: ~
-        CC_COMMENT = 14,    // Start-of-comment: %
-        CC_INVALID = 15,    // Invalid-in-input: [DEL]
+        CC_ESCAPE = 0,      //!< escape character '\'
+        CC_BGROUP = 1,      //!< Begin group: '{'
+        CC_EGROUP = 2,      //!< End group: '}'
+        CC_MATHSHIFT = 3,   //!< Math shift: '$'
+        CC_ALIGNTAB = 4,    //!< Alignment table: &
+        CC_EOL = 5,         //!< End-of-line character
+        CC_PARAM = 6,       //!< Parameter for macros: '#'
+        CC_SUPER = 7,       //!< Math superscript: '^'
+        CC_SUB = 8,         //!< Math subscript: '_'
+        CC_IGNORED = 9,     //!< Ignored entirely
+        CC_SPACE = 10,      //!< Space
+        CC_LETTER = 11,     //!< Letters: the alphabet.
+        CC_OTHER = 12,      //!< 'Other' character:
+        CC_ACTIVE = 13,     //!< Active character: ~
+        CC_COMMENT = 14,    //!< Start-of-comment: %
+        CC_INVALID = 15,    //!< Invalid-in-input: [DEL]
         CC_NONE = 16
     };
 
     enum { npos = string::npos };
 
+    /**
+     * @brief Token class constructor
+     */
     Token(Type type = TOK_SKIPPED, CatCode catCode = CC_INVALID,
             const string& value = string(), const string& source = string(),
             size_t linePos = 0, size_t lineNo = 0,
@@ -75,6 +90,10 @@ public:
           m_charPos(charPos), m_charEnd(charEnd),
           m_lastInLine(lastInLine), m_fileName(fileName) {}
 
+    /**
+     * @brief Token pointer constructor. Create Token object and return shared
+     *      pointer on object
+     */
     static Token::ptr create(Type type = TOK_SKIPPED,
             CatCode catCode = CC_INVALID,
             const string& value = string(), const string& source = string(),
@@ -86,6 +105,8 @@ public:
                 linePos, lineNo, charPos, charEnd, lastInLine, fileName)
                 );
     }
+
+    //! @page Setters and Getters
 
     Type type() const { return m_type; }
     void setType(Type type) { m_type = type; }
@@ -111,65 +132,164 @@ public:
     size_t charEnd() const { return m_charEnd; }
     void setCharEnd(size_t charEnd) { m_charEnd = charEnd; }
 
+    /**
+     * @return TRUE if token's m_type set to TOK_SKIPPED. FALSE otherwise
+     */
     bool isSkipped() const { return m_type == TOK_SKIPPED; }
+
+    /**
+     * @return TRUE if token's m_type set to TOK_CONTROL. FALSE otherwise
+     */
     bool isControl() const { return m_type == TOK_CONTROL; }
+
+    /**
+     * @return TRUE if token's m_type set to TOK_CHARACTER; FALSE otherwise
+     */
     bool isCharacter() const { return m_type == TOK_CHARACTER; }
 
-    bool isCharacter(char c) const {
-        return m_type == TOK_CHARACTER && m_value[0] == c;
+    /**
+     * @brief check does token is checkChar
+     * @return TRUE if token's m_type set to TOK_CHARACTER and m_value is
+     *      checkChar; FALSE otherwise
+     */
+    bool isCharacter(char checkChar) const {
+        return m_type == TOK_CHARACTER &&
+                m_value[0] == checkChar;
     }
 
-    bool isCharacter(char c, CatCode cat) const {
-        return m_type == TOK_CHARACTER && m_value[0] == c && m_catCode == cat;
+    /**
+     * @brief check does token is character checkChar with category code cat;
+     * @return TRUE if token's m_type set to TOK_CHARACTER, m_value set to
+     *      checkChar and m_catCode set to cat; FALSE otherwise
+     */
+    bool isCharacter(char checkChar, CatCode cat) const {
+        return m_type == TOK_CHARACTER &&
+                m_value[0] == checkChar &&
+                m_catCode == cat;
     }
 
+    /**
+     * @brief check is token character with category code cat
+     * @return TRUE if m_type set to TOK_CHARACTER and m_catCode set to cat.
+     *      FALSE otherwise.
+     */
     bool isCharacterCat(CatCode cat) {
         return m_type == TOK_CHARACTER && m_catCode == cat;
     }
 
+    /**
+     * @brief Getter for m_lastInLine variable;
+     * @return m_lastInLine;
+     */
     bool isLastInLine() const { return m_lastInLine; }
 
+    /**
+     * @brief return source file name for token
+     * @return address of source file name
+     */
     const string& fileName() const {
         return m_fileName ? *m_fileName : EMPTY_STRING;
     }
+
+    /**
+     * @brief return pointer to name of token's source file. Getter for
+     *      m_fileName varable
+     */
     shared_ptr<string> fileNamePtr() const { return m_fileName; }
 
+    /**
+     * @brief represent m_value of token
+     * @param parser - needed in case token can be a control command
+     */
     string texRepr(Parser* parser = NULL) const;
+
+    /**
+     * @brief represent meaning of the token:
+     *      if token is character - return string "<catCode> <m_value>"
+     *      if token is control - represent token by texRepr(parser) method
+     *      if token set to skipped - return "skipped characters" string
+     * @param parser needed in case token is a control command
+     */
     string meaning(Parser* parser = NULL) const;
 
     /**
-     * @return represented token string in format
-     * Token(Token::typeName, Token::catCodeName, value, source,
-     *      m_linePos, m_lineNo, m_charPos, m_charEnd )
+     * @brief represent token in format Token(typeName, catCodeName, value,
+     *       source, m_linePos, m_lineNo, m_charPos, m_charEnd )
+     * @return string of representation
      */
     string repr() const;
 
+    /**
+     * @brief lcopy - method return copy of actual token with all inner settings
+     *  responsible for token origin skipped to default value:
+     *  - source
+     *  - linePos
+     *  - lineNo
+     *  - charPos
+     *  - charEnd
+     * @return pointer to the token
+     */
     Token::ptr lcopy() const {
-        return Token::create(
-            m_type, m_catCode, m_value, "", 0, 0, 0, 0,
+        return Token::create(m_type, m_catCode, m_value, "", 0, 0, 0, 0,
             //m_lineNo, m_charEnd, m_charEnd,
             m_lastInLine, m_fileName);
     }
 
-    static string texReprControl(const string& name,
+    /**
+     * @brief represent commandName. Assumed that string name is name of command.
+     *  In general this method change string name. Algorithm is next:
+     *  - if commandName begins from "`" - truncate commandName from "`" and
+     *      return the result (example texReprControl("`abc") -> "abc")
+     *  - if the parser is not a NULL and commandName contain only "\\" symbol,
+     *      than return string: escapechar + "csname" + escapechar + "endcsname"
+     *  - if the parser is not a NULL, commandName is "\\word" or "\\x" (where
+     *      x is LETTER). Method return escapechar + "word" or escapechar + "x"
+     *      if space set to FALSE. If space set to TRUE - append space at the end.
+     *      So it will return escapechar + "word " and escapechar + "x " respectively.
+     *  - otherwise return commandName without changing.
+     * @param parser need to get escape character and checking is "x" is letter;
+     * @param space - set to TRUE if need space at the end of command
+     */
+    static string texReprControl(const string& commandName,
                                 Parser* parser = NULL, bool space = false);
+
+    /**
+     * @brief represent list of Tokens. This method construct string from separate
+     *  consecutive Token's represention. Ultimate string filling till it string
+     *  length will reach #limit. Then return the result.
+     *  - for Charater token the representation is m_value; If the token have
+     *      CC_PARAM category code and #param set to FALSE the m_value goes to the
+     *      final string-representation twice;
+     *  - for Control token the representation forms via texReprControl() method
+     *      with "add space at the end" option.
+     *  Afer string of consecutive token's representation reach length #limit the
+     *  string ends by "\\ETC." and perpesentation loop brokes. But if the limit
+     *  set to 0 the loop run till the end of token's list.
+     * @param tokens - list of Tokens
+     * @param parser - required for control token representation in
+     *  texReprControl() method
+     * @param param -
+     * @param limit - upper limit for ultimate string-representation.
+     * @return - string-representation
+     */
+    // TODO: clarify meaning of #param and finish description above
     static string texReprList(const Token::list& tokens,
             Parser* parser = NULL, bool param = false, size_t limit = 0);
 
 protected:
-    Type        m_type;     // type of token
-    CatCode     m_catCode;  // category code whitch token refer to
-    string      m_value;    // described expression meaning (semantic)
-    string      m_source;   // described expression (souce text)
+    Type        m_type;     //!< type of token
+    CatCode     m_catCode;  //!< category code for token
+    string      m_value;    //!< meaning(semantic) of token
+    string      m_source;   //!< token's origin text
 
-    size_t      m_linePos;  // total number of symbols above current line
-    size_t      m_lineNo;   // line number (in source file)
-    size_t      m_charPos;  // position of tekon`s begin (on current line)
-    size_t      m_charEnd;  // position of token`s end (on current line)
+    size_t      m_linePos;  //!< total number of symbols above current line
+    size_t      m_lineNo;   //!< current line number in source file
+    size_t      m_charPos;  //!< position of tekon`s begin (on current line)
+    size_t      m_charEnd;  //!< position of token`s end (on current line)
 
-    bool        m_lastInLine;   // ID: this is the last Token in the line
+    bool        m_lastInLine;   //!< ID: is this Token the last in the line
 
-    shared_ptr<string> m_fileName;  // tex file name - source file for this token
+    shared_ptr<string> m_fileName;  //!< tex file name - source file for this token
 
     static string EMPTY_STRING;
 };
@@ -177,4 +297,3 @@ protected:
 } // namespace texpp
 
 #endif
-
