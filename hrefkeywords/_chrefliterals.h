@@ -1,0 +1,4 @@
+#ifndef _CHREFLITERALS_H
+#define _CHREFLITERALS_H
+
+#endif // _CHREFLITERALS_H
