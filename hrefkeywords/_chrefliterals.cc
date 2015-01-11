@@ -16,114 +16,43 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <boost/python.hpp>
-#include <boost/python/stl_iterator.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-
-#include "stem_include/english_stem.h"
-#include "stem_include/french_stem.h"
-#include "stem_include/german_stem.h"
-#include "stem_include/finnish_stem.h"
-#include "stem_include/swedish_stem.h"
-#include "stem_include/spanish_stem.h"
-#include "stem_include/dutch_stem.h"
-#include "stem_include/danish_stem.h"
-#include "stem_include/italian_stem.h"
-#include "stem_include/norwegian_stem.h"
-#include "stem_include/portuguese_stem.h"
-#include "stem_include/russian_stem.h"
-
-#include <boost/tuple/tuple.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-#include <set>
-#include <string>
-#include <fstream>
-#include <sstream>
-
-#include <cstring>
-#include <cctype>
-
-#include <iostream>
-
-#include <texpp/parser.h>
-#include <unicode/stringpiece.h>
-#include <unicode/unistr.h>
-#include <unicode/normalizer2.h>
-#include <unicode/schriter.h>
-
-#include <locale.h>
-#include <wchar.h>
+#include "_chrefliterals.h"
 
 using namespace boost::python;
 using namespace texpp;
+using std::string;
 
-class WordsDict {
-public:
-    WordsDict(string filename, size_t abbrMaxLen)
-        : _abbrMaxLen(abbrMaxLen)
-    {
-        // fill dictonary by lines from input file
-        std::ifstream wordsfile(filename.c_str());
-        string word;
-        while(wordsfile.good()) {
-            // QUESTION: every word is one line of file ?
-            std::getline(wordsfile, word);
-            size_t s = word.size();
-            if(s >= _abbrMinLen && s <= abbrMaxLen && word.substr(s-2) != "'s")  {
-                _words.insert(word);
-            }
+WordsDict::WordsDict(string filename, size_t abbrMaxLen)
+    : _abbrMaxLen(abbrMaxLen)
+{
+    // open file
+    std::ifstream wordsfile(filename.c_str());
+    string word;
+    while(wordsfile.good()) {
+        std::getline(wordsfile, word);
+        size_t s = word.size();
+        if(s >= _abbrMinLen &&
+                s <= abbrMaxLen &&
+                word.substr(s-2) != "'s") {
+            _words.insert(word);
         }
     }
+}
 
-    size_t abbrMaxLen() const { return _abbrMaxLen; }
-
-    void insert(string word) { _words.insert(word); }
-    bool contains(string word) const { return _words.count(word); }
-
-protected:
-    std::set<string> _words;
-    size_t _abbrMaxLen;     // max length of word in dictionary
-    static const size_t _abbrMinLen = 2;
-};
-
-/**
- * @return true if ch is digit, '-' or '/' symbol;
- *      otherwise return false
- */
 inline bool _isglue(wchar_t ch) {
     return iswdigit(ch) || ch == L'-' || ch == L'/';
 }
 
-/**
- * @return true if ch is space,'~' or '-' symbol
- *      otherwise return false
- */
 inline bool _isIgnored(wchar_t ch) {
     return ch == L'~' || ch == L'-' || ch == L'/' || iswspace(ch);
 }
 
-/**
- * @return true if word is article
- *      otherwise return false
- */
 inline bool _isIgnoredWord(const string& word) {
     return word == "the" || word == "a" || word == "an" ||
            word == "The" || word == "A" || word == "An";
 }
 
-/**
- * @brief wStrToStr - decompose word wstr from wide(multibyte) characters
- *      String format (basic_string<wchar_t>) into narrow(1 byte) character
- *      array (basic_string<char>)
- * @param wstr - string of wide characters
- * @param toLower - case convertor trigger
- *      if true - translate to lower case all letters in wstr
- *      if false - leave the word register as is
- * @return narrow character array where the multibyte characters are stored
- *      consistently and separated by '\0' delimiter
- */
-string wStrToStr(std::wstring wstr, bool toLower=false)
+string wStrToStr(std::wstring wstr, bool toLower)
 {
     string result("");
     char buf[MB_CUR_MAX + 1];
@@ -139,11 +68,6 @@ string wStrToStr(std::wstring wstr, bool toLower=false)
     return result;
 }
 
-/**
- * @brief strToWStr - compose wide characters String from narrow character array
- * @param input - narrow(1 byte) character array (basic_string<char>)
- * @return translated wide(multibyte) characters String (basic_string<wchar_t>)
- */
 // TODO: refactoring "input","position"
 std::wstring strToWStr(string input)
 {
@@ -163,20 +87,8 @@ std::wstring strToWStr(string input)
     return result;
 }
 
-/**
- * @brief stem_wstring make stemming of the string input
- * @param input - target for stemming, wide character string
- * @param multilang - bool trigger to support multilanguage stemming
- * if true - support english, french, german, spanish, italian,
- *           portuguese, dutch, danish, finnish_stem, norwegian,
- *           swedish and russian languages
- * if false(by default) - support only english and russian languages
- * @return return stemmed word (appropriate to the input) if steming
- *         passed successful.
- *         return the input word otherwise
- */
 // TODO: refactoring "input", "input_backup"
-std::wstring stem_wstring(std::wstring input, bool multilang=false)
+std::wstring stem_wstring(std::wstring input, bool multilang)
 {
     std::wstring input_backup(input);
     stemming::english_stem<> StemEnglish;
@@ -244,75 +156,62 @@ std::wstring stem_wstring(std::wstring input, bool multilang=false)
     return input_backup;
 }
 
-/**
- * @brief normLiteral - separate input literal from unpredicted kind of symbols,
- *                      determine does the input literal is abbreviation.
- *                      If no - make stemming of input literal, return the result
- *                      if yes - return input literal in upper case when every
- *                      letter separated by dots.
- * @param literal - input string variable
- * @param wordsDict - words dictionary. Dictionary contain all words whitch can`t
- * be an abbreviation
- * @param whiteList - dictionary with known abbreviation
- * @param multilang - bool variable. Will support multilingualism?
- * @return normalized string
- */
-// TODO refactoring:
-//      s(literal length),
+// TODO refactor:
 //      n(position counter),
-//      k(position counter),
-//      final(string to write there from input literal only predicted kind on chars)
-//      iter(unicode position iterator "positionIterator"),
 //      clear from unused variables ?
 string normLiteral(string literal,
-        const WordsDict* wordsDict, const dict& whiteList,
-        bool multilang)
+                   const WordsDict* wordsDict,
+                   const dict& whiteList,
+                   bool multilang)
 {
     stemming::english_stem<> StemEnglish;
     std::wstring nWLiteral;
     size_t wordStart = string::npos;
     size_t lastDot = string::npos;
-    string lowercaseLiteral(""), unicodeNormLiteral;
+    string unicodeNormLiteral;
+    // work with plane text
     setlocale(LC_ALL, "en_US.UTF-8");
     /* Decompose unicode chars to the basic ones */
     UErrorCode ecode = U_ZERO_ERROR;
+    // Use name="nfkc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFKC/NFKD
     const Normalizer2* normalizer = icu::Normalizer2::getInstance(NULL, "nfkc", UNORM2_DECOMPOSE, ecode);
-    UnicodeString final;
+    // In ICU, a Unicode string consists of 16-bit Unicode code units
+    UnicodeString finalStr;
     UnicodeString ULiteral = icu::UnicodeString::fromUTF8(StringPiece(literal));
     UnicodeString normULiteral = normalizer->normalize(ULiteral, ecode);
     StringCharacterIterator iter(normULiteral);
-    // fill the final string if specified code is
-    // a base character(letters, numbers, spacing combining marks, and enclosing marks),
-    // a blank character ("blank" or "horizontal space")
-    // or a punctuation character.
-    // Otherwise - skip the symbol
+    // according to unicode format, we deal with code units.
+    // code units goes to the finalStr i case they correspond to BASE character
+    // (letters, numbers, spacing combining marks, and enclosing marks),
+    // a BLANK character ("blank" or "horizontal space") or
+    // a PUNCTUATION character.
     while(iter.hasNext())
     {
         if (u_isbase(iter.current()) ||
                 u_isblank(iter.current()) ||
                 u_ispunct(iter.current()))
-            final += iter.current();
-        // move iterator to the next char
+            finalStr += iter.current();
+        // move iterator to the next code unit
         iter.next();
     }
     // Convert the UnicodeString final to UTF-8 and append the result
     // to a standard string unicodeNormLiteral
-    final.toUTF8String(unicodeNormLiteral);
+    finalStr.toUTF8String(unicodeNormLiteral);
     std::wstring wLiteral = strToWStr(unicodeNormLiteral);
-    size_t s = wLiteral.length();
+    size_t literalLength = wLiteral.length();
     /* convert to lowercase and check the whitelist */
-    // return the literal if the dictionary whiteList contain wLiteral
+    // if literal in known from whiteList abbreviation, than return it
     if(whiteList.has_key(wStrToStr(wLiteral, true))) return literal;
 
     /* TODO: handle 's */
     for(size_t n=0; ; ++n) {
-        wchar_t ch = n < s ? wLiteral[n] : 0;
+        wchar_t ch = n < literalLength ? wLiteral[n] : 0;
 
         if(wordStart < n) { // inside a word
-            if(iswalnum(ch)) {  // if ch is alpha or dirit
+            if(iswalnum(ch)) {  // if ch is alpha or digit
                 // add to current word
             } else if(ch == '.') {
-                // add to current word but remember the dot position
+                // add to current word and remember the dot position
                 lastDot = n;
             } else { // end of the word
 
@@ -321,7 +220,7 @@ string normLiteral(string literal,
                 
                 // check for the dot
                 if(lastDot < n) {
-                    // dot is present but not the last char
+                    // dot present but not as the last char
                     n = lastDot;
                 }
 
@@ -343,20 +242,20 @@ string normLiteral(string literal,
                         if(k != 0) isAbbr = true;
                     } else if(iswlower(word1[k])) {
                         if(firstLower > k) firstLower = k;
-                    } else { // digit or dot
-                        // NOTE: if digit or dot is firsts(k==0) - is abbreviation also?
+                    } else { // dot
                         isAbbr = true;
                     }
                 }
 
                 //
-                if(n+1 < s && _isIgnoredWord(wStrToStr(word))) {
+                if(n+1 < literalLength && _isIgnoredWord(wStrToStr(word))) {
                     // Skip articles, but not at the end
                     continue;
                 }
 
-                // check for abbr in dictionary
+                // if the literal still didn`t marked as an abbreviation and length in limits
                 if(!isAbbr && word.length() <= wordsDict->abbrMaxLen()) {
+                    // the word CAN BE by an abbreviation if word is NOT a part of wordsDict
                     isAbbr = !wordsDict->contains(wStrToStr(word));
                     if(isAbbr && lastUpper == 0)
                         isAbbr = !wordsDict->contains(wStrToStr(word1));
@@ -364,16 +263,19 @@ string normLiteral(string literal,
                 
                 // process the word
                 if(isAbbr) {
-                    if(pLastDot > n) {
+                    if(pLastDot > n) { // if no dots in abbreviation
                         // Stem plural forms for uppercase abbrevations
                         if(word.length() > 2 && firstLower == word.length()-2 &&
                                 word[word.length()-2] == L'e' &&
                                 word[word.length()-1] == L's') {
+                            // stem "ABCes" from "es" ending
                             word.resize(word.length() - 2);
                         } else if(word.length() > 1 && firstLower == word.length()-1 &&
                                 word[word.length()-1] == L's') {
+                            // stem "ABCs" from "s" ending
                             word.resize(word.length() - 1);
                         }
+                        // move abbreviation to upper and put dot after every letter
                         for(size_t k=0; k<word.length(); ++k) {
                             nWLiteral += iswlower(word[k]) ? towupper(word[k]) : word[k];
                             nWLiteral += (L'.');
@@ -389,53 +291,77 @@ string normLiteral(string literal,
             }
         } else { // not inside a word
             if(_isIgnored(ch)) {
-                continue; // ignore these chars
-            } else if(iswalnum(ch)) {
-                wordStart = n;
-            } else if(ch == '\'' && n+1 < s && (literal[n+1] == 's') &&
+                continue;
+            } else if(iswalnum(ch)) {   // if ch a alpha or digit
+                wordStart = n;          // mark the start of word
+            } else if(ch == '\'' && n+1 < literalLength && (literal[n+1] == 's') &&
                     n != 0 && (iswalpha(literal[n-1]))) {
-                if(n+2==s) break;
+                if(n+2==literalLength) break;
                 wchar_t ch2 = wLiteral[n+2];
                 if(iswalnum(ch2) || ch2 == '.')
                     nWLiteral += wLiteral[n];
                 else
                     ++n;
-            } else if(n >= s) {
+            } else if(n >= literalLength) { // end of literal has been reached
                 break;
             } else {
                 nWLiteral += wLiteral[n]; // use character as-is
             }
         }
     }
-
     return wStrToStr(nWLiteral);
 }
 
-string absolutePath(const string& str, const string& workdir)
+string absolutePath(const string& initPath, const string& workDir)
 {
     using boost::filesystem::path;
-    path p = path(str);
-    if(!p.is_complete()) {
-        if(!workdir.empty()) {
-            path w = path(workdir);
-            if(!w.is_complete()) 
-                w = boost::filesystem::current_path() / w;
-            p = w / p;
-        } else {
-            p = boost::filesystem::current_path() / p;
-        }
+
+    path ultiPath = path(initPath);
+    if(!ultiPath.is_absolute()) {
+// TODO: Check is it work correctly
+//        if(!workDir.empty()) {      // if workdir is NOT empty
+//            path wd = path(workDir);
+//            if(!wd.is_absolute())    // if wokdir is NOT absolute
+//                // terminate wd, now wd is absolute path
+//                wd = boost::filesystem::current_path() / wd;
+//            ultiPath = wd / ultiPath;  // append work directory to the initial path
+//        } else {
+//            ultiPath = boost::filesystem::current_path() / ultiPath;
+//        }
+        path wd = workDir.empty() ? boost::filesystem::current_path() :
+                      path(workDir).is_absolute() ? path(workDir) :
+                             boost::filesystem::current_path() / path(workDir);
+        ultiPath = wd / ultiPath;
     }
 
-    string result = p.normalize().string(); 
-    if(result.size() > 2 && 0==result.compare(result.size()-2, 2, "/."))
-        result.resize(result.size()-2);
-    return result;
+    // path can contain repetitive sequences of path delimiters and "/../"
+    // expressions in path variable which mean "one directory up". So we need to
+    // normalize path. For example "/root/dir1///dir2/../dir3///file.ext" boils
+    // down to "/root/dir1/dir3/file.ext
+
+#warning normalize() method is deprecated and can be not maintained in feature \
+            versions of Boost library
+    string retString = ultiPath.normalize().string();
+    // somehow normalize() method add "/." at the end of string. Cut it:
+    if(retString.size() > 2 && 0==retString.compare(retString.size()-2, 2, "/."))
+        retString.resize(retString.size()-2);
+    return retString;
 }
 
-bool isLocalFile(const string& str, const string& workdir)
+/**
+ * @brief isLocalFile check does str look like local file. For this purpose we check several features:
+ *      if str does NOT contain absolute path --> return TRUE
+ *      if str contain absolute path and workdir is part of it --> return TRUE
+ *      otherwise return FALSE
+ * @param fileName - file name(including path);
+ * @param workdir - path to the subdirectory where the file is located;
+ * @return bool value is str local or does NOT.
+ */
+bool isLocalFile(const string& fileName, const string& workdir)
 {
     string aWorkdir = absolutePath(workdir, string());
-    return absolutePath(str, aWorkdir)
+    // if str include aWorkdir than return TRUE
+    return absolutePath(fileName, aWorkdir)
             .compare(0, aWorkdir.size(), aWorkdir) == 0;
 }
 
@@ -451,7 +377,10 @@ struct TextTag
 {
     enum Type {
         TT_OTHER = 0,
-        TT_WORD, TT_CHARACTER, TT_LITERAL, TT_SECTION
+        TT_WORD,
+        TT_CHARACTER,
+        TT_LITERAL,
+        TT_SECTION
     };
 
     Type   type;
@@ -475,6 +404,12 @@ struct TextTag
                o.end != end || o.value != value;
     }
 
+    /**
+     * @brief repr is observer functions that allow you to obtain the string
+     * representation of a TextTag object
+     * @return string representing of TextTag object in format:
+     *      TextTag(type, start, end, "value")
+     */
     string repr() const {
         static const char* types[] = {
             "OTHER", "WORD", "CHARACTER", "LITERAL"
@@ -489,6 +424,13 @@ struct TextTag
 
 typedef std::vector<TextTag> TextTagList;
 
+/**
+ * @brief textTagListRepr is observer functions that allow you to obtain the
+ *      string representation of a TextTagList object
+ * @param list - TextTagList object
+ * @return string representing in form
+ *      "TextTagList(TextTag(type, start, end, "value"), TextTag(...), ...)"
+ */
 string textTagListRepr(const TextTagList& list)
 {
     std::ostringstream out;
@@ -503,6 +445,16 @@ string textTagListRepr(const TextTagList& list)
     return out.str();
 }
 
+/**
+ * @brief I don't don't know how struct based on pickle_suite class realy doing
+ *  in Python but have some hints from boost.org.
+ *  It is often necessary to save and restore the contents of an object to a file.
+ *  One approach to this problem is to write a pair of functions that read and
+ *  write data from a file in a special format. A powerful alternative approach
+ *  is to use Python's pickle module. Exploiting Python's ability for introspection,
+ *  the pickle module recursively converts nearly arbitrary Python objects into
+ *  a stream of bytes that can be written to a file.
+ */
 struct TextTagPickeSuite: pickle_suite
 {
     static tuple getinitargs(const TextTag& tag) {
@@ -513,7 +465,8 @@ struct TextTagPickeSuite: pickle_suite
 struct TextTagListPickeSuite: pickle_suite
 {
     static list getstate(const TextTagList& l) {
-        list ret; TextTagList::const_iterator e = l.end();
+        list ret;
+        TextTagList::const_iterator e = l.end();
         for(TextTagList::const_iterator it = l.begin(); it != e; ++it) {
             ret.append(make_tuple(int(it->type), it->start, it->end, it->value));
         }
@@ -532,9 +485,11 @@ struct TextTagListPickeSuite: pickle_suite
     }
 };
 
-void _extractTextInfo(dict& result, const Node::ptr node,
-        const boost::regex& exclude_regex,
-        const string& workdir = string())
+
+void _extractTextInfo(dict& result,
+                      const Node::ptr node,
+                      const boost::regex& exclude_regex,
+                      const string& workdir)
 {
     size_t childrenCount = node->childrenCount();
 
@@ -542,6 +497,8 @@ void _extractTextInfo(dict& result, const Node::ptr node,
         return;
     }
 
+    // append currert path to the workdir if workdir is relative path,
+    // otherwise just init aWorkdir by the workdir
     string aWorkdir = absolutePath(workdir, string());
     shared_ptr<string> lastFile;
     TextTagList* tags = 0;
@@ -629,8 +586,6 @@ TextTagList findLiterals(const TextTagList& tags,
     TextTagList result;
 
     // Detemine a maximum literal length
-    // QUESTION: What variable "e" mean? I`m not sure that the default
-    //           constructor for "e" is not "garbage"
     if(maxChars == 0) {
         for(stl_input_iterator<str> it(literals.keys()), e;
                                                 it != e; ++it) {
