@@ -300,6 +300,7 @@ const any& Parser::symbolAny(const string& name) const
     SymbolTable::const_iterator it = m_symbols.find(name);
     if(it != m_symbols.end())
         return it->second.second;
+    std::cout << "command \"" << name << "\" not found in m_symbols" << std::endl;
     return EMPTY_ANY;
 }
 
@@ -478,10 +479,10 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
             return Node::ptr();
     }
 
-    // extract command from the token
+    // chek m_symbols table for the comand
     Command::ptr cmd = symbol(token, Command::ptr());
 
-    // try to cast cmd to Macro. If cmd isn't belong to the Macro class -
+    // try to cast cmd to Macro. If cmd doesn't belong to the Macro class -
     // dynamic_pointer_cast will return NULL pointer
     Macro::ptr macro = dynamic_pointer_cast<Macro>(cmd);
 
@@ -494,16 +495,16 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
     Node::ptr child(new Node("control_token"));
     child->tokens().push_back(token);  // put token to the child node
     child->setValue(token);            // init child node's m_value by token
-    node->appendChild("control_sequence", child);   // add chind to node
+    node->appendChild("control_sequence", child);   // add child to node
     bool expanded = true;
     
-    pushBack(NULL); // move m_tokenSource to m_tokenQueue. clean and m_token
+    pushBack(NULL); // move m_tokenSource to m_tokenQueue
 
-    // QUESTION: I do not understand  coditional
+    // QUESTION: I do not understand coditions
     if(m_conditionals.empty() || m_conditionals.back().active)
         traceCommand(token, true);
-
-    if(!cmd) {      // if didn`t find this command in m_symbols table
+    // mark node as undefined control sequence if no sach command in m_symbols table
+    if(!cmd) {
         logger()->log(Logger::ERROR,
             "Undefined control sequence", *this, token);
         /*token = Token::create(Token::TOK_SKIPPED,
@@ -514,7 +515,7 @@ Node::ptr Parser::rawExpandToken(Token::ptr token)
         //token = token->lcopy();
         //token->setType(Token::TOK_SKIPPED);
         //node->setValue(Token::list(1, token));
-        node->setType("undefined_control_sequence"); // set type for node
+        node->setType("undefined_control_sequence");
 
     } else if(dynamic_pointer_cast<ConditionalBegin>(macro)) {
         ConditionalBegin::ptr condBegin =
@@ -878,7 +879,7 @@ Token::ptr Parser::peekToken(bool expand)
     }
     */
 
-    // update m_tokenSource and m_token by mtoken and tokenSource
+    // update m_tokenSource and m_token with current mtoken and tokenSource
     pushBack(NULL); // peekToken may be called recursively
     m_token = mtoken;
     m_tokenSource = tokenSource;
@@ -1229,23 +1230,24 @@ Node::ptr Parser::parseKeyword(const vector<string>& keywords)
 {
     Node::ptr node(new Node("keyword"));
 
+    // move space characters to the node tokens
     while(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
 
-    string value;
+    string value;   // collector of next letters
     vector<string>::const_iterator kwEnd = keywords.end();
     for(size_t n=1; peekToken() && peekToken()->isCharacter(); ++n) {
         value += std::tolower(peekToken()->value()[0]);
         nextToken(&node->tokens());
-
+        // whether srting of next symbols is one of keywords list
         vector<string>::const_iterator kw = keywords.begin();
         for(; kw != kwEnd; ++kw) {
             if(kw->substr(0, n) == value) break;
         }
 
-        if(kw == kwEnd) {
+        if(kw == kwEnd) {   // if next string is not one of keywords list
             break;
-        } else if(kw->size() == n) {
+        } else if(kw->size() == n) { // current keyword assembled completely
             node->setValue(value);
             resetNoexpand();
             return node;
@@ -2248,7 +2250,7 @@ Node::ptr Parser::parseGroup(GroupType groupType)
 
     // main parsing loop
     while(true) {
-        if(!peekToken()) {      // get next no skipped token
+        if(!peekToken()) {      // get next "NOT skipped" token
             // if we inside formula $...$
             if(groupType == GROUP_MATH || groupType == GROUP_DMATH) {
                 Node::ptr group_end(new Node("group_end"));
