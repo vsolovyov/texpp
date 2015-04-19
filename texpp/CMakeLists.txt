@@ -28,6 +28,7 @@ set(libtexpp_SOURCES
     base/hyphenation.cc
     base/box.cc
     base/base.cc
+    base/bibliography.cc
 )
 
 set(libtexpp_HEADERS
@@ -55,6 +56,7 @@ set(libtexpp_HEADERS
     base/hyphenation.h
     base/box.h
     base/base.h
+    base/bibliography.h
 )
 
 add_library(libtexpp STATIC ${libtexpp_SOURCES} ${libtexpp_HEADERS})

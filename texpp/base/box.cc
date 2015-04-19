@@ -185,6 +185,7 @@ bool Rule::invoke(Parser& parser, shared_ptr<Node> node)
     }
 
     while(true) {
+        // parce optrional parameters
         Node::ptr spec = parser.parseOptionalKeyword(kw_spec);
         string name = spec->value(string());
         node->appendChild("spec_" + name, spec);

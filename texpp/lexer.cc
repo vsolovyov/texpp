@@ -91,7 +91,7 @@ const string& Lexer::line(size_t n) const
 
 bool Lexer::nextLine()
 {
-    // reset counters  - begin of line
+    // reset counters - begin of line
     m_charPos = 0;
     m_charEnd = 0;
 
@@ -107,26 +107,23 @@ bool Lexer::nextLine()
         std::cout << "*";
     }
 
-    // TODO: check this event in simple project
     // Scan text line from tex-source file till '\n' or '\r' or '\r\n' symbol
-    // TODO: Should this loop run on interactive mode?
     while(true) {
-        // scan text line character by character
+        // extract one character from the source file <m_file>
         char c = m_file->get();
 
         // check do some troublel with file?
         if(!m_file->good()) // TODO: handle errors
             break;
 
-        // push scanned symbol into variable m_lineOrig
+        // push extracted symbol to variable m_lineOrig
         m_lineOrig.push_back(c);
-
 
         // push '\n' to m_lineOrig if c=='\r' and next after c char is '\n'
         if(c == '\n') {
             break;
         } else if(c == '\r') {
-            if(m_file->peek() == '\n')
+            if(m_file->peek() == '\n')  // if '\n' is next after '\r' ("\r\n")
                 m_lineOrig.push_back(char(m_file->get()));
             break;
         }
@@ -138,11 +135,11 @@ bool Lexer::nextLine()
         return false;
     }
 
-    // save line, add it into the m_lines vector
+    // save line; collect it in m_lines vector
     if(m_saveLines)
         m_lines.push_back(m_lineOrig);
 
-    // Discard spaces at the end
+    // find position before endlinechar ('\r' or '\n' )
     size_t end = m_lineOrig.find_last_not_of(" \r\n");
     // NOTE Bereziuk: meniningless expression?
     if(end == string::npos) end = -1;
@@ -150,7 +147,7 @@ bool Lexer::nextLine()
     m_lineTex.reserve(end+2);
     m_lineTex.assign(m_lineOrig, 0, end+1);
 
-    // Append endlinechar to the end of m_lineTex
+    // append endlinechar to the end of m_lineTex
     if(m_endlinechar >= 0 && m_endlinechar <= 255)
         m_lineTex += char(m_endlinechar);
 
@@ -161,9 +158,10 @@ bool Lexer::nextLine()
 
 bool Lexer::nextChar()
 {
-    m_charPos = m_charEnd;      // updating m_charPos
+    m_charPos = m_charEnd;      // move position to the end of previous char
 
-    if(m_charPos >= m_lineTex.size()) { // end of line
+    if(m_charPos >= m_lineTex.size()) { // not more characters in line
+        // move to "End Of Line" state
         m_char = -1;
         m_catCode = Token::CC_EOL;
         return false;
@@ -196,6 +194,7 @@ bool Lexer::nextChar()
         m_charEnd = m_charPos + 1;
     }
 
+    // if actual character is last, include the rest of
     if(m_charEnd >= m_lineTex.size())
         m_charEnd = std::max(m_charEnd, m_lineOrig.size());
 
@@ -224,8 +223,8 @@ Token::ptr Lexer::nextToken()
         return Token::ptr();
 
     while(true) {
-        if(!nextChar())             // read next symbol
-            m_state = ST_EOL;
+        if(!nextChar())             // try read next symbol from m_lineTex
+            m_state = ST_EOL;       // no more symbols in current line
 
         /////////// Handle ST_EOL
         if(m_state == ST_EOL) {
@@ -235,7 +234,7 @@ Token::ptr Lexer::nextToken()
             }
 
             if(!nextLine()) {       // read next line
-                m_state = ST_EOF;
+                m_state = ST_EOF;   // move to End Of File state if no text more
                 return Token::ptr();
             }
             m_state = ST_NEW_LINE;

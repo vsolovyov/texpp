@@ -47,15 +47,22 @@ public:
                         std::set<string>&) { return true; }
 };
 
+class Begin: public Command
+{
+public:
+    explicit Begin(const string& name): Command(name) {}
+    bool invoke(Parser&, shared_ptr<Node>);
+};
+
 class End: public Command
 {
 public:
     explicit End(const string& name): Command(name) {}
-    bool invoke(Parser& parser, shared_ptr<Node> node);
+    bool invoke(Parser& parser, shared_ptr<Node>);
 };
 
 /**
- * @brief The Par class relate to /par command - paragraph
+ * @brief The Par class relate to \par command - paragraph
  */
 class Par: public Command
 {

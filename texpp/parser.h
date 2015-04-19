@@ -30,6 +30,7 @@
 #include <climits>
 
 #include <boost/any.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace texpp {
 
@@ -81,7 +82,10 @@ public:
      */
     bool isOneFile() const;
 
-    // Returns a pair (start_pos, end_pos)
+    /**
+     * @brief sourcePos get the position of the node in source file
+     * @return pair (start_pos, end_pos)
+     */
     std::pair<size_t, size_t> sourcePos() const;
 
     const string& type() const { return m_type; }
@@ -153,7 +157,7 @@ public:
     string treeRepr(size_t indent = 0) const;
 
 protected:
-    string                  m_type;     // type of token inside
+    string                  m_type;     // type of node
     any                     m_value;    // main object in the node
     vector< Token::ptr >    m_tokens;   // set of tokens inside node.
     ChildrenList            m_children; // list of inner node+tag pairs
@@ -237,9 +241,9 @@ public:
     Token::ptr peekToken(bool expand = true);
 
     /**
-     * @brief push tokens from the m_tokenSource to the tokenVector,
-     *  update m_lineNo, clean m_tokenSource and m_token
-     * @return  m_token value if m_tokenSource is not empty. Otherwise use
+     * @brief push tokens from the m_tokenSource to the tokenVector, update
+     *  m_lineNo, clear m_tokenSource and m_token
+     * @return m_token value if m_tokenSource is not empty. Otherwise use
      *          peekToken() to get next real token
      */
     Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
@@ -317,7 +321,7 @@ public:
     Node::ptr parseDimenFactor();
 
     /**
-     * @brief parseNormalDimen parse next symbols that should be a dimension
+     * @brief parseNormalDimen parse next symbols that should be a dimension units
      * @param fil
      * @param mu
      * @return
@@ -331,7 +335,25 @@ public:
                                     Token::ptr nameToken = Token::ptr());
     Node::ptr parseGeneralText(bool expand, bool implicitLbrace = true);
 
+    // NOTE: as for me the return value "string" will be more logicaly than Node
+    /**
+     * @brief parseFileName parse path to file limited by brackets { ... }.
+     * @return node with file name inside as single string
+     */
     Node::ptr parseFileName();
+
+    /**
+     * @brief parseCite - compose node for subsequent citation discrtiption
+     * @return pointer into composed node
+     */
+    Node::ptr parseCite();
+
+    /**
+     * @brief parseBibitem - compose node for subsequent bibliography item
+     *  discrtiption
+     * @return pointer into composed node
+     */
+    Node::ptr parseBibitem();
 
     /**
      * @brief read word untill non letter symbol
@@ -488,7 +510,7 @@ protected:
                                     // rawNextToken() to get token
 
     int             m_groupLevel;
-    bool            m_end;
+    bool            m_end;          // stop parsing when true
     bool            m_endinput;
     bool            m_endinputNow;
 

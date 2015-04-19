@@ -18,10 +18,6 @@
 
 #include "_chrefliterals.h"
 
-using namespace boost::python;
-using namespace texpp;
-using std::string;
-
 WordsDict::WordsDict(string filename, size_t abbrMaxLen)
     : _abbrMaxLen(abbrMaxLen)
 {
@@ -37,19 +33,6 @@ WordsDict::WordsDict(string filename, size_t abbrMaxLen)
             _words.insert(word);
         }
     }
-}
-
-inline bool _isglue(wchar_t ch) {
-    return iswdigit(ch) || ch == L'-' || ch == L'/';
-}
-
-inline bool _isIgnored(wchar_t ch) {
-    return ch == L'~' || ch == L'-' || ch == L'/' || iswspace(ch);
-}
-
-inline bool _isIgnoredWord(const string& word) {
-    return word == "the" || word == "a" || word == "an" ||
-           word == "The" || word == "A" || word == "An";
 }
 
 string wStrToStr(std::wstring wstr, bool toLower)
@@ -156,9 +139,6 @@ std::wstring stem_wstring(std::wstring input, bool multilang)
     return input_backup;
 }
 
-// TODO refactor:
-//      n(position counter),
-//      clear from unused variables ?
 string normLiteral(string literal,
                    const WordsDict* wordsDict,
                    const dict& whiteList,
@@ -174,7 +154,8 @@ string normLiteral(string literal,
     /* Decompose unicode chars to the basic ones */
     UErrorCode ecode = U_ZERO_ERROR;
     // Use name="nfkc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFKC/NFKD
-    const Normalizer2* normalizer = icu::Normalizer2::getInstance(NULL, "nfkc", UNORM2_DECOMPOSE, ecode);
+    const Normalizer2* normalizer = icu::Normalizer2::getInstance(
+                NULL, "nfkc", UNORM2_DECOMPOSE, ecode);
     // In ICU, a Unicode string consists of 16-bit Unicode code units
     UnicodeString finalStr;
     UnicodeString ULiteral = icu::UnicodeString::fromUTF8(StringPiece(literal));
@@ -318,7 +299,7 @@ string absolutePath(const string& initPath, const string& workDir)
 
     path ultiPath = path(initPath);
     if(!ultiPath.is_absolute()) {
-// TODO: Check is it work correctly
+// TODO: Check whether it work correctly
 //        if(!workDir.empty()) {      // if workdir is NOT empty
 //            path wd = path(workDir);
 //            if(!wd.is_absolute())    // if wokdir is NOT absolute
@@ -338,7 +319,6 @@ string absolutePath(const string& initPath, const string& workDir)
     // expressions in path variable which mean "one directory up". So we need to
     // normalize path. For example "/root/dir1///dir2/../dir3///file.ext" boils
     // down to "/root/dir1/dir3/file.ext
-
 #warning normalize() method is deprecated and can be not maintained in feature \
             versions of Boost library
     string retString = ultiPath.normalize().string();
@@ -348,15 +328,6 @@ string absolutePath(const string& initPath, const string& workDir)
     return retString;
 }
 
-/**
- * @brief isLocalFile check does str look like local file. For this purpose we check several features:
- *      if str does NOT contain absolute path --> return TRUE
- *      if str contain absolute path and workdir is part of it --> return TRUE
- *      otherwise return FALSE
- * @param fileName - file name(including path);
- * @param workdir - path to the subdirectory where the file is located;
- * @return bool value is str local or does NOT.
- */
 bool isLocalFile(const string& fileName, const string& workdir)
 {
     string aWorkdir = absolutePath(workdir, string());
@@ -373,64 +344,27 @@ bool isLocalFile(const string& fileName, const string& workdir)
         throw; \
     }
 
-struct TextTag
-{
-    enum Type {
-        TT_OTHER = 0,
-        TT_WORD,
-        TT_CHARACTER,
-        TT_LITERAL,
-        TT_SECTION
+bool TextTag::operator==(const TextTag& o) {
+    return o.type == type && o.start == start &&
+            o.end == end && o.value == value;
+}
+
+bool TextTag::operator!=(const TextTag& o) {
+    return o.type != type || o.start != start ||
+            o.end != end || o.value != value;
+}
+
+string TextTag::repr() const {
+    static const char* types[] = {
+        "OTHER", "WORD", "CHARACTER", "LITERAL"
     };
+    std::ostringstream out;
+    out << "TextTag("
+        << (type <= TT_LITERAL && type >= 0 ? types[type] : "UNKNOWN")
+        << ", " << start << ", " << end << ", \"" << value << "\")";
+    return out.str();
+}
 
-    Type   type;
-    size_t start;
-    size_t end;
-    string value;
-    std::wstring wcvalue;
-
-    // XXX: boost::python does not support pickling of enums
-    explicit TextTag(int t = TT_OTHER, size_t s = 0, size_t e = 0,
-                            const string& val = string())
-        : type(Type(t)), start(s), end(e), value(val), wcvalue(strToWStr(val)) {}
-
-    bool operator==(const TextTag& o) {
-        return o.type == type && o.start == start &&
-               o.end == end && o.value == value;
-    }
-
-    bool operator!=(const TextTag& o) {
-        return o.type != type || o.start != start ||
-               o.end != end || o.value != value;
-    }
-
-    /**
-     * @brief repr is observer functions that allow you to obtain the string
-     * representation of a TextTag object
-     * @return string representing of TextTag object in format:
-     *      TextTag(type, start, end, "value")
-     */
-    string repr() const {
-        static const char* types[] = {
-            "OTHER", "WORD", "CHARACTER", "LITERAL"
-        };
-        std::ostringstream out;
-        out << "TextTag("
-            << (type <= TT_LITERAL && type >= 0 ? types[type] : "UNKNOWN")
-            << ", " << start << ", " << end << ", \"" << value << "\")";
-        return out.str();
-    }
-};
-
-typedef std::vector<TextTag> TextTagList;
-
-/**
- * @brief textTagListRepr is observer functions that allow you to obtain the
- *      string representation of a TextTagList object
- * @param list - TextTagList object
- * @return string representing in form
- *      "TextTagList(TextTag(type, start, end, "value"), TextTag(...), ...)"
- */
 string textTagListRepr(const TextTagList& list)
 {
     std::ostringstream out;
@@ -445,46 +379,26 @@ string textTagListRepr(const TextTagList& list)
     return out.str();
 }
 
-/**
- * @brief I don't don't know how struct based on pickle_suite class realy doing
- *  in Python but have some hints from boost.org.
- *  It is often necessary to save and restore the contents of an object to a file.
- *  One approach to this problem is to write a pair of functions that read and
- *  write data from a file in a special format. A powerful alternative approach
- *  is to use Python's pickle module. Exploiting Python's ability for introspection,
- *  the pickle module recursively converts nearly arbitrary Python objects into
- *  a stream of bytes that can be written to a file.
- */
-struct TextTagPickeSuite: pickle_suite
-{
-    static tuple getinitargs(const TextTag& tag) {
-        return make_tuple(int(tag.type), tag.start, tag.end, tag.value);
+list TextTagListPickeSuite::getstate(const TextTagList& l) {
+    list ret;
+    TextTagList::const_iterator e = l.end();
+    for(TextTagList::const_iterator it = l.begin(); it != e; ++it) {
+        ret.append(make_tuple(int(it->type), it->start, it->end, it->value));
     }
-};
+    return ret;
+}
 
-struct TextTagListPickeSuite: pickle_suite
-{
-    static list getstate(const TextTagList& l) {
-        list ret;
-        TextTagList::const_iterator e = l.end();
-        for(TextTagList::const_iterator it = l.begin(); it != e; ++it) {
-            ret.append(make_tuple(int(it->type), it->start, it->end, it->value));
-        }
-        return ret;
+void TextTagListPickeSuite::setstate(TextTagList& l, list state) {
+    l.resize(len(state));
+    size_t n = 0;
+    for(stl_input_iterator<tuple> it(state), e; it != e; ++it) {
+        int type = extract<int>((*it)[0]);
+        size_t start = extract<size_t>((*it)[1]);
+        size_t end = extract<size_t>((*it)[2]);
+        string value = extract<string>((*it)[3]);
+        l[n++] = TextTag(type, start, end, value);
     }
-    static void setstate(TextTagList& l, list state) {
-        l.resize(len(state));
-        size_t n = 0;
-        for(stl_input_iterator<tuple> it(state), e; it != e; ++it) {
-            int type = extract<int>((*it)[0]);
-            size_t start = extract<size_t>((*it)[1]);
-            size_t end = extract<size_t>((*it)[2]);
-            string value = extract<string>((*it)[3]);
-            l[n++] = TextTag(type, start, end, value);
-        }
-    }
-};
-
+}
 
 void _extractTextInfo(dict& result,
                       const Node::ptr node,
@@ -497,11 +411,11 @@ void _extractTextInfo(dict& result,
         return;
     }
 
-    // append currert path to the workdir if workdir is relative path,
-    // otherwise just init aWorkdir by the workdir
+    // [system path /] workdir
     string aWorkdir = absolutePath(workdir, string());
     shared_ptr<string> lastFile;
     TextTagList* tags = 0;
+    // for every child node
     for(size_t n = 0; n < childrenCount; ++n) {
         Node::ptr child = node->child(n);
 
@@ -520,7 +434,9 @@ void _extractTextInfo(dict& result,
         }
 
         if(type != TextTag::TT_OTHER) {
+            // if child stems from single source file
             if(child->isOneFile()) {
+                // get name of source file. (TODO refactoring: file -> fileName)
                 shared_ptr<string> file = child->oneFile();
                 if(file && (file == lastFile ||
                             isLocalFile(*file, workdir))) {
@@ -533,7 +449,7 @@ void _extractTextInfo(dict& result,
                         tags = &tl;
                     }
 
-                    // Save the node
+                    // fill the tags by TextTag info from the child node
                     std::pair<size_t, size_t> pos = child->sourcePos();
                     tags->push_back(TextTag(type, pos.first, pos.second,
                                                 child->valueString()));
@@ -547,13 +463,13 @@ void _extractTextInfo(dict& result,
                                 pos.second, "abstract"));
             }
             _extractTextInfo(result, child, exclude_regex, workdir);
-            tags = 0; // XXX: it it really required ?
+            tags = 0;
         }
     }
 }
 
 dict extractTextInfo(const Node::ptr node, const string& exclude_regex,
-                const string& workdir = string())
+                const string& workdir)
 {
     dict result;
     boost::regex rx(exclude_regex, boost::regex::extended);
@@ -581,7 +497,7 @@ string getDocumentEncoding(const Node::ptr node)
 TextTagList findLiterals(const TextTagList& tags,
         const dict& literals, const dict& notLiterals,
         const WordsDict* wordsDict, const dict& whiteList,
-        size_t maxChars = 0, bool multilang=false)
+        size_t maxChars, bool multilang)
 {
     TextTagList result;
 
@@ -671,9 +587,10 @@ TextTagList findLiterals(const TextTagList& tags,
 
         if(!foundLiterals.empty()) { // XXX: return all found literals !
             // Create a tag for the longest literal found
-            result.push_back(TextTag(TextTag::TT_LITERAL, tags[n].start,
-                                foundLiterals.back().get<1>(),
-                                foundLiterals.back().get<0>()));
+            result.push_back(TextTag(TextTag::TT_LITERAL,
+                                     tags[n].start,
+                                     foundLiterals.back().get<1>(),
+                                     foundLiterals.back().get<0>()));
             n = foundLiterals.back().get<2>();
         }
     }
@@ -746,4 +663,5 @@ BOOST_PYTHON_MODULE(_chrefliterals)
     def("getDocumentEncoding", &getDocumentEncoding);
     def("findLiterals", &findLiterals);
     def("replaceLiterals", &replaceLiterals);
+    def("extractCiteFreequency", &extractCiteFreequency);
 }

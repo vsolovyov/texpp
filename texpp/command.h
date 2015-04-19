@@ -127,6 +127,7 @@ class Begingroup: public Command
 {
 public:
     Begingroup(const string& name = string()): Command(name) {}
+    bool invoke(Parser &, shared_ptr<Node>);
 };
 
 // class witch describe behavior of the symbol '}'
@@ -134,6 +135,7 @@ class Endgroup: public Command
 {
 public:
     Endgroup(const string& name = string()): Command(name) {}
+    bool invoke(Parser &, shared_ptr<Node>);
 };
 
 } // namespace texpp

@@ -18,28 +18,6 @@
 
 #include <texpp/base/base.h>
 
-#include <texpp/base/conditional.h>
-#include <texpp/base/miscmacros.h>
-#include <texpp/base/misc.h>
-#include <texpp/base/show.h>
-#include <texpp/base/func.h>
-#include <texpp/base/files.h>
-#include <texpp/base/variable.h>
-#include <texpp/base/integer.h>
-#include <texpp/base/dimen.h>
-#include <texpp/base/glue.h>
-#include <texpp/base/toks.h>
-#include <texpp/base/font.h>
-#include <texpp/base/char.h>
-#include <texpp/base/parshape.h>
-#include <texpp/base/hyphenation.h>
-#include <texpp/base/box.h>
-
-#include <texpp/parser.h>
-
-#include <boost/lexical_cast.hpp>
-#include <ctime>
-#include <climits>
 
 namespace texpp {
 namespace base {
@@ -115,9 +93,20 @@ void initSymbols(Parser& parser)
     __TEXPP_SET_COMMAND("write", Write);
 
     __TEXPP_SET_COMMAND("message", Message);
+
+    // begin/end group symbols
+    // NOTE: breaks next tests: test_tex_math
+    __TEXPP_SET_COMMAND("begingroup", Begingroup);
+    __TEXPP_SET_COMMAND("endgroup", Endgroup);
+
+    // citation
+    __TEXPP_SET_COMMAND("cite", Cite);
+    __TEXPP_SET_COMMAND("bibitem", Bibliography);
     
     // various commands
-    __TEXPP_SET_COMMAND("end", End);
+    __TEXPP_SET_COMMAND("begin", Begingroup);
+    __TEXPP_SET_COMMAND("end", Endgroup);   // LaTeX case
+//    __TEXPP_SET_COMMAND("end", End);    // TeX -> end parsing document
     __TEXPP_SET_COMMAND("par", Par);
 
     __TEXPP_SET_COMMAND("relax", Relax);
@@ -136,9 +125,6 @@ void initSymbols(Parser& parser)
 
     __TEXPP_SET_COMMAND("show", Show);
     __TEXPP_SET_COMMAND("showthe", ShowThe);
-
-    __TEXPP_SET_COMMAND("begingroup", Begingroup);
-    __TEXPP_SET_COMMAND("endgroup", Endgroup);
 
     // TODO: implement everypar etc.
     __TEXPP_SET_COMMAND("afterassignment", Afterassignment);
@@ -374,17 +360,15 @@ void initSymbols(Parser& parser)
     __TEXPP_SET_COMMAND("pagedepth", SpecialDimen, Dimen(0));
 
     // interaction
-    __TEXPP_SET_COMMAND("errorstopmode", SetInteraction,
-                                            Parser::ERRORSTOPMODE);
-    __TEXPP_SET_COMMAND("scrollmode", SetInteraction, Parser::SCROLLMODE);
-    __TEXPP_SET_COMMAND("nonstopmode", SetInteraction, Parser::NONSTOPMODE);
-    __TEXPP_SET_COMMAND("batchmode", SetInteraction, Parser::BATCHMODE);
+    __TEXPP_SET_COMMAND("errorstopmode", SetInteraction, Parser::ERRORSTOPMODE);
+    __TEXPP_SET_COMMAND("scrollmode",   SetInteraction, Parser::SCROLLMODE);
+    __TEXPP_SET_COMMAND("nonstopmode",  SetInteraction, Parser::NONSTOPMODE);
+    __TEXPP_SET_COMMAND("batchmode",    SetInteraction, Parser::BATCHMODE);
 
     // Ignored commands
     __TEXPP_SET_COMMAND("dump", IgnoredCommand);
 
     // Unimplemented commands
-
     __TEXPP_SET_COMMAND("spread", UnimplementedCommand);
 
     __TEXPP_SET_COMMAND("showbox", UnimplementedCommand);
@@ -519,24 +503,32 @@ void initSymbols(Parser& parser)
         parser.setSymbol("mathcode"+n, int(0x7000 + i));
     }
 
-    parser.lexer()->assignCatCode(0x7f,   Token::CC_INVALID);   // set invalid symbol
+    parser.lexer()->assignCatCode(0x7f,   Token::CC_INVALID);   // invalid symbol
     parser.setSymbol("catcode127", int(Token::CC_INVALID));
-    parser.lexer()->assignCatCode('\\',   Token::CC_ESCAPE);    // set "begin command" symbol '\\'
+    parser.lexer()->assignCatCode('\\',   Token::CC_ESCAPE);    // "begin command" symbol
     parser.setSymbol("catcode92",  int(Token::CC_ESCAPE));
-    parser.lexer()->assignCatCode('\r',   Token::CC_EOL);       // set end of line symbol '\r'
+    parser.lexer()->assignCatCode('\r',   Token::CC_EOL);       // end of line
     parser.setSymbol("catcode13",  int(Token::CC_EOL));
-    parser.lexer()->assignCatCode(' ',    Token::CC_SPACE);     // set space symbol ' '
+    parser.lexer()->assignCatCode(' ',    Token::CC_SPACE);     // space
     parser.setSymbol("catcode32",  int(Token::CC_SPACE));
-    parser.lexer()->assignCatCode('%',    Token::CC_COMMENT);   // set comment symbil '%'
+    parser.lexer()->assignCatCode('%',    Token::CC_COMMENT);   // begin comment
     parser.setSymbol("catcode37",  int(Token::CC_COMMENT));
+
+    // NOTE: usually for TeX curve brackets {} are the essence of the characters.
+    // In LaTeX they mean begin group and end group character respectively. So
+    // the behaviour of texpp a bit differ from TeX processing because it need
+    // to be adjasted for LaTeX a bit.
+    // At this moment next two assigning brokes test_tex_math test.
+    parser.lexer()->assignCatCode('{', Token::CC_BGROUP);
+    parser.lexer()->assignCatCode('}', Token::CC_EGROUP);
 
     parser.setSymbol("delcode96", int(0));
 
-    parser.lexer()->setEndlinechar('\r');       // set delimiter for the end of text line
+    parser.lexer()->setEndlinechar('\r');   // character mean "end of line"
     parser.setSymbol("endlinechar", int('\r'));
 
     parser.setSymbol("escapechar", int('\\'));
-    // QUESTION what the sence of this magic numbers?
+    // QUESTION: what the sence of this magic numbers?
     parser.setSymbol("tolerance", int(10000));
     parser.setSymbol("mag", int(1000));
     parser.setSymbol("maxdeadcycles", int(25));

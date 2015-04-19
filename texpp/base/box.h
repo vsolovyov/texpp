@@ -110,6 +110,14 @@ public:
     explicit Rule(const string& name, Parser::Mode mode)
         : Command(name), m_mode(mode) {}
     bool invoke(Parser& parser, shared_ptr<Node> node);
+
+    // TODO: Here I suppose some suggestions conserning prfix R* before Mode
+    //  name so need to be check it later more precisely
+    /**
+     * @brief presetMode change mode for the parser into opposite to the m_mode.
+     * @param parser
+     * @return true
+     */
     bool presetMode(Parser& parser);
 
 protected:

@@ -6,13 +6,19 @@ install(PROGRAMS hrefkeywords.py hrefliterals.py hreftest.py texpp.py DESTINATIO
 
 set(_chrefliterals_SOURCES
     _chrefliterals.cc
+    bibliography.cpp
 )
+set(_chrefliterals_HEADERS
+    _chrefliterals.h
+    bibliography.h
+)
+
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${ICU_INCLUDE_DIRS})
 
-add_library(_chrefliterals SHARED ${_chrefliterals_SOURCES})
+add_library(_chrefliterals SHARED ${_chrefliterals_SOURCES} ${_chrefliterals_HEADERS})
 target_link_libraries(_chrefliterals libtexpp ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})
 set_target_properties(_chrefliterals PROPERTIES PREFIX "" SUFFIX ".so" OUTPUT_NAME "_chrefliterals")
 

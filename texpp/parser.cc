@@ -31,6 +31,8 @@
 #include <texpp/base/misc.h>
 #include <texpp/base/files.h>
 
+#include <texpp/command.h>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -66,7 +68,7 @@ using base::Dimen;
 
 /**
  * @brief make text representing of m_value
- * @return m_value if it string, otherwise return empty string
+ * @return m_value if m_value have type string, otherwise return empty string
  */
 const string& Node::valueString() const
 {
@@ -120,7 +122,7 @@ string Node::treeRepr(size_t indent) const
         ChildrenList::const_iterator end = m_children.end();
         for(ChildrenList::const_iterator it = m_children.begin();
                                             it != end; ++it) {
-            str += string(indent+2, ' ') +      // hiearhical backward
+            str += string(indent+2, ' ') +      // hiearchical backward
                     it->first + ": " + it->second->treeRepr(indent+2);
         }
     } else {
@@ -213,6 +215,7 @@ bool Node::isOneFile() const
 std::pair<size_t, size_t> Node::sourcePos() const
 {
     std::pair<size_t, size_t> pos(Token::npos, Token::npos);
+    // find node start and end positin in the inner tokens
     BOOST_FOREACH(Token::ptr token, m_tokens) {
         if(token->lineNo() != 0) {
             if(pos.first == Token::npos)
@@ -220,6 +223,7 @@ std::pair<size_t, size_t> Node::sourcePos() const
             pos.second = token->linePos() + token->charEnd();
         }
     }
+    // find node start and end positin in the subsidiary nodes
     typedef pair<string, Node::ptr> C;
     BOOST_FOREACH(C c, m_children) {
         std::pair<size_t, size_t> sub_pos = c.second->sourcePos();
@@ -300,7 +304,7 @@ const any& Parser::symbolAny(const string& name) const
     SymbolTable::const_iterator it = m_symbols.find(name);
     if(it != m_symbols.end())
         return it->second.second;
-    std::cout << "command \"" << name << "\" not found in m_symbols" << std::endl;
+//    std::cout<< "command \"" << name << "\" not found in m_symbols"<<std::endl;
     return EMPTY_ANY;
 }
 
@@ -730,7 +734,7 @@ Token::ptr Parser::nextToken(vector< Token::ptr >* tokenVector, bool expand)
     if(tokenVector) {
         // insert content of m_tokenSource to the tokenVector
         tokenVector->insert(tokenVector->end(),
-                m_tokenSource.begin(), m_tokenSource.end());
+                            m_tokenSource.begin(), m_tokenSource.end());
     }
 
     Token::ptr token = m_token;
@@ -2130,11 +2134,17 @@ Node::ptr Parser::parseFileName()
 
     string fileName;
 
+//    NOTE: LaTeX use syntax with brackets /input{path/to/file}
+//    while(helperIsImplicitCharacter(Token::CC_SPACE) ||
+//          peekToken()->isCharacterCat(Token::CC_BGROUP))
+//        nextToken(&node->tokens());
+
     while(helperIsImplicitCharacter(Token::CC_SPACE))
-        nextToken(&node->tokens());
+          nextToken(&node->tokens());
 
     while(peekToken() && peekToken()->isCharacter() &&
-            !peekToken()->isCharacterCat(Token::CC_SPACE)) {
+          !peekToken()->isCharacterCat(Token::CC_SPACE) &&
+          !peekToken()->isCharacterCat(Token::CC_EGROUP)) {
         Token::ptr letter = nextToken(&node->tokens());
         fileName += letter->value();
     }
@@ -2142,11 +2152,82 @@ Node::ptr Parser::parseFileName()
     if(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
 
+//    if(peekToken()->isCharacterCat(Token::CC_EGROUP)) // LaTeX fiture {...}
+//        nextToken(&node->tokens());
+
     node->setValue(fileName);
 
     resetNoexpand();
 
     parsing = false;
+    return node;
+}
+
+Node::ptr Parser::parseCite()
+{
+    Node::ptr node(new Node("cite_item"));
+
+    string bibitem;
+    while(helperIsImplicitCharacter(Token::CC_SPACE) ||
+          peekToken()->isCharacterCat(Token::CC_BGROUP))
+        nextToken(&node->tokens());
+
+    while(peekToken() && peekToken()->isCharacter() &&
+          !peekToken()->isCharacterCat(Token::CC_EGROUP)) {
+        Token::ptr letter = nextToken(&node->tokens());
+        bibitem += letter->value();
+    }
+
+    if(helperIsImplicitCharacter(Token::CC_SPACE))
+        nextToken(&node->tokens());
+
+    if(peekToken()->isCharacterCat(Token::CC_EGROUP)){
+        nextToken(&node->tokens());
+    }else{
+        logger()->log(Logger::MESSAGE, "bracket } is missing", *this, peekToken());
+    }
+
+    boost::algorithm::erase_all(bibitem," ");
+    node->setValue(bibitem);
+
+    return node;
+}
+
+Node::ptr Parser::parseBibitem()
+{
+    Node::ptr node(new Node("bibliography_item"));
+    string keyString;
+
+    while(helperIsImplicitCharacter(Token::CC_SPACE) ||
+          peekToken()->isCharacterCat(Token::CC_BGROUP))
+        nextToken(&node->tokens());
+
+    while(peekToken() && peekToken()->isCharacter() &&
+          !peekToken()->isCharacterCat(Token::CC_SPACE) &&
+          !peekToken()->isCharacterCat(Token::CC_EGROUP)) {
+        Token::ptr letter = nextToken(&node->tokens());
+        keyString += letter->value();
+    }
+
+    if(helperIsImplicitCharacter(Token::CC_SPACE))
+        nextToken(&node->tokens());
+
+    if(peekToken()->isCharacterCat(Token::CC_EGROUP)){
+        nextToken(&node->tokens());
+    }else{
+        logger()->log(Logger::MESSAGE, "bracket } is missing", *this, peekToken());
+    }
+
+    string source;
+
+    if(helperIsImplicitCharacter(Token::CC_SPACE))
+        nextToken(&node->tokens());
+
+    while(peekToken() && !peekToken()->isControl())
+        source += nextToken(&node->tokens())->value();
+
+    node->setValue(std::make_pair(keyString,source));
+
     return node;
 }
 

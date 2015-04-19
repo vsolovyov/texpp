@@ -21,6 +21,30 @@
 
 #include <texpp/common.h>
 
+#include <texpp/base/conditional.h>
+#include <texpp/base/miscmacros.h>
+#include <texpp/base/misc.h>
+#include <texpp/base/show.h>
+#include <texpp/base/func.h>
+#include <texpp/base/files.h>
+#include <texpp/base/variable.h>
+#include <texpp/base/integer.h>
+#include <texpp/base/dimen.h>
+#include <texpp/base/glue.h>
+#include <texpp/base/toks.h>
+#include <texpp/base/font.h>
+#include <texpp/base/char.h>
+#include <texpp/base/parshape.h>
+#include <texpp/base/hyphenation.h>
+#include <texpp/base/box.h>
+#include <texpp/base/bibliography.h>
+
+#include <texpp/parser.h>
+
+#include <boost/lexical_cast.hpp>
+#include <ctime>
+#include <climits>
+
 namespace texpp {
 
 class Parser;

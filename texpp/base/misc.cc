@@ -37,11 +37,19 @@ bool UnimplementedCommand::invoke(Parser& parser, shared_ptr<Node> node)
     return true;
 }
 
+bool Begin::invoke(Parser&, shared_ptr<Node>)
+{
+    return true;
+}
+
+
 bool End::invoke(Parser& parser, shared_ptr<Node>)
 {
     parser.end();
     return true;
 }
+
+
 
 bool Par::invoke(Parser& parser, shared_ptr<Node>)
 {

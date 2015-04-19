@@ -61,5 +61,17 @@ Token::list_ptr Macro::stringToTokens(const string& str)
     return returnValue;
 }
 
+bool texpp::Begingroup::invoke(Parser & parser, shared_ptr<Node>)
+{
+    parser.beginGroup();
+    return true;
+}
+
+bool texpp::Endgroup::invoke(Parser & parser, shared_ptr<Node>)
+{
+    parser.endGroup();
+    return true;
+}
+
 } // namespace texpp
 

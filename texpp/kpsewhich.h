@@ -21,10 +21,10 @@
 namespace texpp {
 
 /**
- * @brief kpseextend append ".tex" to the end of fname if no extesion yet
+ * @brief kpseextend append extention ".tex" to the end of fname
  * @param fname - string in format "path/to/file/fileName". Path separator
- *      depends on OS whitch you use.
- * @return fname with appended extention ".tex" if no extention yet
+ *      depends on OS you use
+ * @return fname with extention ".tex" if no extention yet
  */
 std::string kpseextend(const std::string& fname);
 std::string kpsewhich(const std::string& fname,
