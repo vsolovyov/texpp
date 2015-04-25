@@ -68,7 +68,7 @@ namespace texpp {
     string reprString(const string& s);
 
     /**
-     * @brief represent value in string format
+     * @brief represent the <value> in string format
      * @param value - object with type boost::any
      * @return string as value text representing in certain format
      */

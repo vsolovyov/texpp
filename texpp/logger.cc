@@ -49,8 +49,8 @@ const string& Logger::levelName(Level level) const
 
 string Logger::tokenLines(Parser& parser, Token::ptr token) const
 {
-    if(!token || !token->lineNo()) return string();     // NOTE: usless line of code
-    // condition chakes before tokenLines() function calls
+    if(!token || !token->lineNo()) return string();
+    // check condition before call tokenLines()
 
     std::ostringstream r;
     if(parser.lexer()->fileName().empty()) r << "<*> ";

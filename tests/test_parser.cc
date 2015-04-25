@@ -264,15 +264,32 @@ BOOST_AUTO_TEST_CASE( parser_symbols )
     BOOST_CHECK_EQUAL(7, parser->symbol("e", 0));
 }
 
+
+#include <texpp/base/bibliography.h>
+#include <texpp/token.h>
 // here we can see an example of simple node tree representing
 BOOST_AUTO_TEST_CASE( parser_parse )
 {
-    shared_ptr<Parser> parser = create_parser("abc{def}gh");
-    parser->lexer()->assignCatCode('{', Token::CC_BGROUP);
-    parser->lexer()->assignCatCode('}', Token::CC_EGROUP);
+//    std::string str = "abc{def}gh ";
+//    std::string str = "\\vrule width 4pt height 6pt depth 6pt ";
+//    std::string str = "\\input /home/bereziuk/lausanne/texpp/build/anotherFile.tex abc{def}gh ";
+    //    std::string str = "\\bibitem{knuth-84 } ";
+    std::string str = "\\begin{thebibliography}{99}\n"
+                      "\\bibitem{knuth-84} \n"
+                      "Donald E. Knuth: {\\it The \\TeX Book}. Addison-Wesley PC. 1984.\n"
+                      "\\bibitem{knuth-meta}\n"
+                      "Donald E.Knuth: {\\it The METAFONTbook}. Addison-Wesley PC. 1984.\n"
+                      "\\end{thebibliography}";
+    // std::cout<< str << std::endl;
+    shared_ptr<Parser> parser = create_parser(str);
+//    parser->lexer()->assignCatCode('{', Token::CC_BGROUP);
+//    parser->lexer()->assignCatCode('}', Token::CC_EGROUP);
     
+//    std::cout << texpp::Token::texReprControl("\\", parser.get(), true) << std::endl;
+
     Node::ptr document = parser->parse();
-    //std::cout << document->treeRepr();
+    std::cout << document->treeRepr();
+//    texpp::base::Bibliography::showBibliography();
 }
 
 // this macro command is examle of macro definition whitch we test in

@@ -7,7 +7,7 @@
 
 //VERY IMPORTANT - include this last
 #include <boost/test/included/unit_test.hpp>
-#include "hrefkeywords/_chrefliterals.cc"
+#include "hrefkeywords/_chrefliterals.h"
 
 WordsDict* wordsDict = new WordsDict ("/usr/share/dict/words",4);
 boost::python::dict whiteList;

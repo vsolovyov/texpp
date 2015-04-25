@@ -48,7 +48,7 @@ public:
 
     //const string& levelName(Level level) const;
 
-    /** return text situated aftef token in line
+    /** return text situated after token in line
      *         if source file for parcer and token is the same
      *  return empty string if token is invalid
      */

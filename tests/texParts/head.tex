@@ -1,0 +1,56 @@
+% Template article for preprint document class `elsart'
+% SP 2001/01/05
+% Modified CG (ESME) for Model 4, single column, 2 titles, abstract/rÈsumÈ,
+%  and 2 sets of keywords - 21.05.03 - file called phys-english.tex
+% English Version for Physique (CRAS series 4, now COMREN) - a Note in English
+% Revamped, CG, 18.08.04, adding header, dates,
+%   and name of presenter
+
+\documentclass{elsart4}
+
+% Use the option doublespacing or reviewcopy to obtain double line spacing
+% \documentclass[doublespacing]{elsart}
+
+% if you use PostScript figures in your article
+% use the graphics package for simple commands
+%\usepackage{graphics}
+% or use the graphicx package for more complicated commands
+\usepackage{graphicx}
+\usepackage{wrapfig}
+% or use the epsfig package if you prefer to use the old commands
+%\usepackage{epsfig}
+
+% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+
+\usepackage[english,francais]{babel}
+
+%ENVIRONMENTS THEOREMS...
+% These are predefined, and correspond to the
+%     numbering system used in the journal!
+%English
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{e-proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{e-definition}[theorem]{Definition\rm}
+\newtheorem{remark}{\it Remark\/}
+\newtheorem{example}{\it Example\/}
+%French
+\newtheorem{theoreme}{Th\'eor\`eme}[section]
+\newtheorem{lemme}[theoreme]{Lemme}
+\newtheorem{proposition}[theoreme]{Proposition}
+\newtheorem{corollaire}[theoreme]{Corollaire}
+\newtheorem{definition}[theoreme]{D\'efinition\rm}
+\newtheorem{remarque}{\it Remarque}
+\newtheorem{exemple}{\it Exemple\/}
+\renewcommand{\theequation}{\arabic{equation}}
+\setcounter{equation}{0}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% GUILLEMETS (FRENCH QUOTES) %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\og{\leavevmode\raise.3ex\hbox{$\scriptscriptstyle\langle\!\langle$~}}
+\def\fg{\leavevmode\raise.3ex\hbox{~$\!\scriptscriptstyle\,\rangle\!\rangle$}}
+
+\newcommand{\cmt}[1]{{\bf *** #1 ***}}
