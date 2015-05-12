@@ -471,6 +471,23 @@ bool Endinput::invoke(Parser& parser, shared_ptr<Node>)
     return true;
 }
 
+bool InputBibliography::invoke(Parser &parser, shared_ptr<Node> node)
+{
+    Node::ptr fnameNode = parser.parseFileName();
+    node->appendChild("file_name", fnameNode);
+
+    // find name of external biblioghraphy filename
+    string currentFileName = parser.lexer()->fileName();
+    string workDir = currentFileName.substr(0,currentFileName.rfind("/")+1);
+    string bibSource = fnameNode->value(string()) + ".bbl";
+
+    string fullname = kpsewhich(bibSource, workDir);
+
+    parser.input(bibSource, fullname);
+
+    return true;
+}
+
 } // namespace base
 } // namespace texpp
 

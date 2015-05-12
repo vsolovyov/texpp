@@ -87,6 +87,9 @@ void initSymbols(Parser& parser)
     __TEXPP_SET_COMMAND("input", Input);
     __TEXPP_SET_COMMAND("endinput", Endinput);
 
+    __TEXPP_SET_COMMAND("bibliography", InputBibliography);
+#warning there no exit from Bibliography file mekanism (or not)
+
     __TEXPP_SET_COMMAND("immediate", Immediate);
     __TEXPP_SET_COMMAND("openout", Openout);
     __TEXPP_SET_COMMAND("closeout", Closeout);

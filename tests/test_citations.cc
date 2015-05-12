@@ -27,7 +27,9 @@ int main()
     pyDict.items();
 
     bool interactive = false;
-    string fileName = "/home/bereziuk/lausanne/cptex/1310.3811v1/Vorticity.tex";
+
+    string fileName = "/home/bereziuk/lausanne/tests/1504.04854v1/chiralMHD.tex";
+//    string fileName = "/home/bereziuk/lausanne/cptex/1310.3811v1/Vorticity.tex";
 //    string fileName = "/home/bereziuk/lausanne/ptex/1106.0175v1/CRAS_Fermi_FP_VC_final_new_astroph.tex";
 //    string fileName = "/home/bereziuk/lausanne/texpp/tests/texParts/head.tex";
 //    string fileName = "/home/bereziuk/lausanne/texpp/tests/texParts/begin_document.tex";

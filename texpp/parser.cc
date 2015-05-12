@@ -18,6 +18,7 @@
 
 #include <texpp/parser.h>
 #include <texpp/logger.h>
+#include <texpp/kpsewhich.h>
 
 #include <texpp/base/base.h>
 #include <texpp/base/show.h>
@@ -239,7 +240,8 @@ std::pair<size_t, size_t> Node::sourcePos() const
 Parser::Parser(const string& fileName, std::istream* file,
         const string& workdir, bool interactive, bool ignoreEmergency,
         shared_ptr<Logger> logger)
-    : m_workdir(workdir), m_ignoreEmergency(ignoreEmergency),
+    : m_workdir(workdir),
+      m_ignoreEmergency(ignoreEmergency),
       m_logger(logger), m_groupLevel(0),
       m_end(false), m_endinput(false), m_endinputNow(false),
       m_lineNo(1), m_mode(NULLMODE), m_prevMode(NULLMODE),
@@ -248,7 +250,6 @@ Parser::Parser(const string& fileName, std::istream* file,
       m_interaction(ERRORSTOPMODE)
 {
     m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, interactive, true));
-
     init();
 }
 
@@ -2135,9 +2136,9 @@ Node::ptr Parser::parseFileName()
     string fileName;
 
 //    NOTE: LaTeX use syntax with brackets /input{path/to/file}
-//    while(helperIsImplicitCharacter(Token::CC_SPACE) ||
-//          peekToken()->isCharacterCat(Token::CC_BGROUP))
-//        nextToken(&node->tokens());
+    while(helperIsImplicitCharacter(Token::CC_SPACE) ||
+          peekToken()->isCharacterCat(Token::CC_BGROUP))
+        nextToken(&node->tokens());
 
     while(helperIsImplicitCharacter(Token::CC_SPACE))
           nextToken(&node->tokens());
@@ -2152,8 +2153,8 @@ Node::ptr Parser::parseFileName()
     if(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
 
-//    if(peekToken()->isCharacterCat(Token::CC_EGROUP)) // LaTeX fiture {...}
-//        nextToken(&node->tokens());
+    if(peekToken()->isCharacterCat(Token::CC_EGROUP)) // LaTeX fiture {...}
+        nextToken(&node->tokens());
 
     node->setValue(fileName);
 
