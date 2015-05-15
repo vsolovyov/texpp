@@ -471,6 +471,28 @@ bool Endinput::invoke(Parser& parser, shared_ptr<Node>)
     return true;
 }
 
+bool InputCommand::invoke(Parser &parser, shared_ptr<Node> node)
+{
+    Node::ptr fnameNode = parser.parseFileName();
+    node->appendChild("file_name", fnameNode);
+    string fname = fnameNode->valueString();
+    if(fname.substr(0,1)== "{"){
+        fname = fname.substr(1, fname.size()-1);
+    }
+
+    // NOTE: Temporary disable this package
+    if(fname == "xy"){ return true; }
+
+    string workDir = parser.workdir();
+    if(workDir == ""){
+        string currentFileName = parser.lexer()->fileName();
+        workDir = currentFileName.substr(0,currentFileName.rfind("/")+1);
+    }
+    string fullname = kpsewhich(fname, workDir);
+    parser.input(fname, fullname);
+    return true;
+}
+
 bool InputBibliography::invoke(Parser &parser, shared_ptr<Node> node)
 {
     Node::ptr fnameNode = parser.parseFileName();

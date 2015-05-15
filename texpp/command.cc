@@ -61,15 +61,160 @@ Token::list_ptr Macro::stringToTokens(const string& str)
     return returnValue;
 }
 
-bool texpp::Begingroup::invoke(Parser & parser, shared_ptr<Node>)
+bool Begingroup::invoke(Parser & parser, shared_ptr<Node>)
 {
     parser.beginGroup();
     return true;
 }
 
-bool texpp::Endgroup::invoke(Parser & parser, shared_ptr<Node>)
+bool Endgroup::invoke(Parser & parser, shared_ptr<Node>)
 {
     parser.endGroup();
+    return true;
+}
+
+bool BeginCommand::invoke(Parser& parser, shared_ptr<Node> node)
+{
+    Node::ptr groupNode = parser.parseGroup(Parser::GROUP_NORMAL);
+    node->appendChild("env_type",groupNode);
+    string env_type = "";
+    pair<string,Node::ptr> child;
+    BOOST_FOREACH(child, groupNode->children())
+    {
+        if(child.first == "text_word"){
+            env_type = child.second->valueString();
+            break;
+        }
+    }
+    parser.beginCustomGroup("environment_" + env_type);
+    return true;
+}
+
+bool EndCommand::invoke(Parser &parser, shared_ptr<Node> node)
+{
+    Node::ptr groupNode = parser.parseGroup(Parser::GROUP_NORMAL);
+    node->appendChild("env_type",groupNode);
+    string env_type = "";
+    pair<string,Node::ptr> child;
+    BOOST_FOREACH(child, groupNode->children())
+    {
+        if(child.first == "text_word"){
+            env_type = child.second->valueString();
+            break;
+        }
+    }
+    if(env_type == "end"){
+        parser.end();
+    }
+    parser.endCustomGroup();
+    return true;
+}
+
+bool Usepackage::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    Node::ptr argNode = parser.parseOptionalArgs();
+    Node::ptr pkgNode = parser.parseGeneralArg();
+    node->appendChild("args", argNode);
+    node->appendChild("package", pkgNode);
+    if(pkgNode->valueString() == "inputenc"){
+        node->setType("inputenc");
+        node->setValue(argNode->valueString());
+    }
+    return true;
+}
+
+bool Section::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    if(parser.peekToken() && parser.peekToken()->isCharacter('*')) {
+        parser.nextToken(&node->tokens());
+    }
+    node->setType("section");
+    Node::ptr title = parser.parseGeneralArg();
+    node->setValue(title->valueString());
+    return true;
+}
+
+bool Acknowledgments::invoke(Parser &, shared_ptr<Node> node)
+{
+    node->setType("section");
+    node->setValue("acknowledgments");
+    return true;
+}
+
+bool Newcommand::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    node->appendChild("cmd",  parser.parseGeneralArg());
+    node->appendChild("args", parser.parseOptionalArgs());
+    node->appendChild("opt",  parser.parseOptionalArgs());
+    node->appendChild("def",  parser.parseGeneralArg());
+    return true;
+}
+
+bool Newenvironment::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    node->appendChild("nam", parser.parseGeneralArg());
+    node->appendChild("args", parser.parseOptionalArgs());
+    node->appendChild("begdef", parser.parseGeneralArg());
+    node->appendChild("enddef", parser.parseGeneralArg());
+    return true;
+}
+
+bool Newtheorem::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    if(parser.peekToken()->isCharacter('*')){
+        node->appendChild("star", parser.parseToken());
+    }
+    node->appendChild("env_nam", parser.parseGeneralArg());
+    node->appendChild("optional_spaces", parser.parseOptionalSpaces());
+    if(parser.peekToken() && parser.peekToken()->isCharacter('['))
+    {
+        node->appendChild("numbered_like", parser.parseOptionalArgs());
+        node->appendChild("caption", parser.parseGeneralArg());
+    } else{
+        node->appendChild("caption", parser.parseGeneralArg());
+        node->appendChild("within", parser.parseOptionalArgs());
+    }
+    return true;
+}
+
+bool Documentclass::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    node->appendChild("options", parser.parseOptionalArgs());
+    node->appendChild("class", parser.parseGeneralArg());
+    return true;
+}
+
+bool DefCommand::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    node->appendChild("token", parser.parseControlSequence());
+    Node::ptr args(new Node("def_args"));
+    node->appendChild("args", args);
+    while(parser.peekToken() &&
+          !parser.peekToken()->isCharacterCat(Token::CC_BGROUP))
+    {
+        parser.nextToken(&args->tokens());
+    }
+    node->appendChild("def", parser.parseGeneralText(false));
+    return true;
+}
+
+bool CaptionCommand::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    node->setValue("caption");
+    Node::ptr text = parser.parseGeneralArg();
+    node->appendChild("text", text);
+    return true;
+}
+
+bool ImageCommand::invoke(Parser & parser, shared_ptr<Node> node)
+{
+    if(parser.peekToken() && parser.peekToken()->isCharacter('*')){
+        parser.nextToken(&node->tokens());
+    }
+    node->setValue("image");
+    parser.parseOptionalArgs();
+    Node::ptr filename = parser.parseGeneralArg();
+    node->appendChild("filename", filename);
     return true;
 }
 

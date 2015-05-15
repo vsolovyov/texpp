@@ -2122,6 +2122,61 @@ Node::ptr Parser::parseGeneralText(bool expand, bool implicitLbrace)
     return node;
 }
 
+Node::ptr Parser::parseOptionalArgs()
+{
+    Node::ptr node(new Node("optional_args"));
+    node->appendChild("optional_spaces", parseOptionalSpaces());
+    if(peekToken() && peekToken()->isCharacter('['))
+    {
+        Node::ptr args(new Node("args"));
+        node->appendChild("args", args);
+        string value = "";
+        while(peekToken())
+        {
+            value += nextToken(&args->tokens())->value();
+            if(lastToken()->isCharacter('[')){
+                break;
+            }
+        }
+        node->setValue(value.substr(1,value.length()-1));
+    }
+    return node;
+}
+
+Node::ptr Parser::parseGeneralArg(bool expand)
+{
+    Node::ptr node(new Node("args"));
+    node->appendChild("optional_spaces", parseOptionalSpaces());
+
+    vector<string> argList;
+    if(peekToken() && peekToken()->isCharacter('{'))
+    {
+        Node::ptr textNode = parseGeneralText(expand);
+        node->appendChild("group", textNode);
+        BOOST_FOREACH(Token::ptr tok, textNode->child("balanced_text")->tokens())
+        {
+            argList.push_back(tok->value());
+        }
+    }else {
+        Node::ptr tNode = parseToken();
+        node->appendChild("token", tNode);
+        while(peekToken())
+        {
+            argList.push_back(nextToken()->value());
+            if(lastToken()->isCharacter('}'))
+                break;
+        }
+    }
+    string argListJoined;
+    BOOST_FOREACH(string s, argList){
+        argListJoined += s;
+    }
+    node->setValue(argListJoined);
+    return node;
+}
+
+
+
 Node::ptr Parser::parseFileName()
 {
     static bool parsing = false;

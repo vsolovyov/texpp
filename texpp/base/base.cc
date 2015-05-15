@@ -17,17 +17,76 @@
 */
 
 #include <texpp/base/base.h>
-
-
 namespace texpp {
 namespace base {
 
+std::string toString(int i){
+    std::stringstream ss;
+    ss << i;
+    return ss.str();
+}
+
+#define __TEXPP_SET_COMMAND(name, T, ...) \
+    parser.setSymbol("\\" name, \
+        Command::ptr(new T("\\" name, ##__VA_ARGS__)))
+
+/**
+ * @brief initLaTeXstyle defines the most important aspects of LaTeX style
+ */
+void initLaTeXstyle(Parser& parser)
+{
+    parser.setSymbol("catcode" + toString('{'), int(Token::CC_BGROUP));
+    parser.setSymbol("catcode" + toString('}'), int(Token::CC_EGROUP));
+    parser.setSymbol("catcode" + toString('$'), int(Token::CC_MATHSHIFT));
+    parser.setSymbol("catcode" + toString('\t'),int(Token::CC_SPACE));
+
+    __TEXPP_SET_COMMAND("begin", BeginCommand);
+    __TEXPP_SET_COMMAND("end", EndCommand);
+
+    __TEXPP_SET_COMMAND("usepackage", Usepackage);
+    __TEXPP_SET_COMMAND("section", Section);
+    __TEXPP_SET_COMMAND("acknowledgments", Acknowledgments);
+    __TEXPP_SET_COMMAND("acknowledgements", Acknowledgments);
+
+    __TEXPP_SET_COMMAND("newcommand", Newcommand);
+    __TEXPP_SET_COMMAND("renewcommand", Newcommand);
+    __TEXPP_SET_COMMAND("providecommand", Newcommand);
+
+    __TEXPP_SET_COMMAND("newenvironment", Newenvironment);
+    __TEXPP_SET_COMMAND("renewenvironment", Newenvironment);
+
+    __TEXPP_SET_COMMAND("newtheorem", Newtheorem);
+
+#warning command redefinition \def \edef \gdef \xdef
+    __TEXPP_SET_COMMAND("def", DefCommand);
+    __TEXPP_SET_COMMAND("edef", DefCommand);
+    __TEXPP_SET_COMMAND("gdef", DefCommand);
+    __TEXPP_SET_COMMAND("xdef", DefCommand);
+
+    __TEXPP_SET_COMMAND("documentclass", Documentclass);
+    __TEXPP_SET_COMMAND("documentstyle", Documentclass);
+
+    __TEXPP_SET_COMMAND("input", InputCommand);
+
+    __TEXPP_SET_COMMAND("caption", CaptionCommand);
+    __TEXPP_SET_COMMAND("includegraphics", ImageCommand);
+
+    // citation
+    __TEXPP_SET_COMMAND("cite", Cite);
+    __TEXPP_SET_COMMAND("bibitem", Bibliography);
+
+    Token::ptr mathToken(new Token(Token::TOK_CHARACTER, Token::CC_MATHSHIFT, "$"));
+    parser.setSymbol("\\(", TokenCommand(mathToken));
+    parser.setSymbol("\\)", TokenCommand(mathToken));
+    parser.setSymbol("\\[", TokenCommand(mathToken));
+    parser.setSymbol("\\]", TokenCommand(mathToken));
+    parser.setSymbol("\\be", TokenCommand(mathToken));
+    parser.setSymbol("\\ee", TokenCommand(mathToken));
+}
+
+
 void initSymbols(Parser& parser)
 {
-    #define __TEXPP_SET_COMMAND(name, T, ...) \
-        parser.setSymbol("\\" name, \
-            Command::ptr(new T("\\" name, ##__VA_ARGS__)))
-
     // conditionals
     __TEXPP_SET_COMMAND("iftrue", Iftrue);
     __TEXPP_SET_COMMAND("iffalse", Iffalse);
@@ -84,11 +143,11 @@ void initSymbols(Parser& parser)
     __TEXPP_SET_COMMAND("closein", Closein);
     __TEXPP_SET_COMMAND("read", Read);
 
-    __TEXPP_SET_COMMAND("input", Input);
-    __TEXPP_SET_COMMAND("endinput", Endinput);
+//    __TEXPP_SET_COMMAND("input", Input);
+//    __TEXPP_SET_COMMAND("endinput", Endinput);
 
+#warning there no exit way from Bibliography file (or not?)
     __TEXPP_SET_COMMAND("bibliography", InputBibliography);
-#warning there no exit from Bibliography file mekanism (or not)
 
     __TEXPP_SET_COMMAND("immediate", Immediate);
     __TEXPP_SET_COMMAND("openout", Openout);
@@ -102,14 +161,8 @@ void initSymbols(Parser& parser)
     __TEXPP_SET_COMMAND("begingroup", Begingroup);
     __TEXPP_SET_COMMAND("endgroup", Endgroup);
 
-    // citation
-    __TEXPP_SET_COMMAND("cite", Cite);
-    __TEXPP_SET_COMMAND("bibitem", Bibliography);
-    
     // various commands
-    __TEXPP_SET_COMMAND("begin", Begingroup);
-    __TEXPP_SET_COMMAND("end", Endgroup);   // LaTeX case
-//    __TEXPP_SET_COMMAND("end", End);    // TeX -> end parsing document
+//    __TEXPP_SET_COMMAND("end", End);  // in TeX command mean stop parsing
     __TEXPP_SET_COMMAND("par", Par);
 
     __TEXPP_SET_COMMAND("relax", Relax);
@@ -545,6 +598,8 @@ void initSymbols(Parser& parser)
     parser.setSymbol("time", int(time->tm_hour*60 + time->tm_min));
 
     parser.setSymbol("hangafter", int(1));
+
+    initLaTeXstyle(parser);
 }
 
 } // namespace base

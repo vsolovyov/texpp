@@ -122,7 +122,9 @@ public:
     ConditionalEnd(const string& name = string()): Macro(name) {}
 };
 
-// class witch describe behavior of the symbol '{'
+/**
+ * @brief handler of left curve bracket '{' symbol. '{' mean begin new group.
+ */
 class Begingroup: public Command
 {
 public:
@@ -130,7 +132,9 @@ public:
     bool invoke(Parser &, shared_ptr<Node>);
 };
 
-// class witch describe behavior of the symbol '}'
+/**
+ * @brief handler of right curve bracket '}' symbol. '}' mean end current group.
+ */
 class Endgroup: public Command
 {
 public:
@@ -138,6 +142,96 @@ public:
     bool invoke(Parser &, shared_ptr<Node>);
 };
 
+/**
+ * @brief handler of \begin{...} command
+ */
+class BeginCommand: public Command
+{
+public:
+    BeginCommand(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
+/**
+ * @brief handler of \end{...} command
+ */
+class EndCommand: public Command
+{
+public:
+    EndCommand(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
+class Usepackage: public Command
+{
+public:
+    Usepackage(const string& name = string()): Command(name) {}
+    bool invoke(Parser & parser, shared_ptr<Node> node);
+};
+
+class Section: public Command
+{
+public:
+    Section(const string& name = string()): Command(name) {}
+    bool invoke(Parser & parser, shared_ptr<Node> node);
+};
+
+class Acknowledgments: public Command
+{
+public:
+    Acknowledgments(const string& name = string()): Command(name) {}
+    bool invoke(Parser &, shared_ptr<Node> node);
+};
+
+class Newcommand: public Command
+{
+public:
+    Newcommand(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
+class Newenvironment: public Command
+{
+public:
+    Newenvironment(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
+class Newtheorem: public Command
+{
+public:
+    Newtheorem(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
+class Documentclass: public Command
+{
+public:
+    Documentclass(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
+class DefCommand: public Command
+{
+public:
+    DefCommand(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+    bool checkPrefixes(Parser&){ return true; }
+};
+
+class CaptionCommand: public Command
+{
+public:
+    CaptionCommand(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
+class ImageCommand: public Command
+{
+public:
+    ImageCommand(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
 } // namespace texpp
 
 #endif

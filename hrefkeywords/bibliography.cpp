@@ -95,7 +95,11 @@ void extractCitation(const Node::ptr node,
         } else if(child->type() == "bibliography_item"){
             bibliography->push_back(child->value(
                                         std::make_pair(string(),string())));
-        } else if(child->type() == "group" || child->type() == "command" ) {
+        } else if(child->type() == "group" ||
+                  child->type() == "custom_group" ||
+                  child->type().compare(0, 12, "environment_") == 0 ||
+                  child->type() == "command" )
+        {
             extractCitation(child,citations,bibliography,context);
         } else if(child->type() == "text_character" && child->valueString() == ".")
         {

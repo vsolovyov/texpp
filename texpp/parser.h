@@ -241,9 +241,9 @@ public:
     Token::ptr peekToken(bool expand = true);
 
     /**
-     * @brief push tokens from the m_tokenSource to the tokenVector, update
-     *  m_lineNo, clear m_tokenSource and m_token
-     * @return m_token value if m_tokenSource is not empty. Otherwise use
+     * @brief push tokens from the token cache @a m_tokenSource to the
+     *  @a tokenVector, clear m_tokenSource and m_token, update m_lineNo;
+     * @return m_token value if @a m_tokenSource is not empty. Otherwise use
      *          peekToken() to get next real token
      */
     Token::ptr nextToken(vector< Token::ptr >* tokenVector = NULL,
@@ -294,6 +294,14 @@ public:
      */
     bool helperIsImplicitCharacter(Token::CatCode catCode, bool expand = true);
 
+    /**
+     * @brief parseGroup parse group in current level from "beginGroup" to the
+     *  "endGroup" mark for the same group level.
+     * @param groupType - type of group that should be parsed. Nesessary for
+     *  distinguish begin/endGroup type marks.
+     * @return entire group Node object. parsed text inside the node text is
+     *  $...$ or {...} etc.
+     */
     Node::ptr parseGroup(GroupType groupType);
 
     Node::ptr parseCommand(Command::ptr command);
@@ -334,6 +342,16 @@ public:
     Node::ptr parseBalancedText(bool expand, int paramCount = -1,
                                     Token::ptr nameToken = Token::ptr());
     Node::ptr parseGeneralText(bool expand, bool implicitLbrace = true);
+
+    /**
+     * @brief parseOptionalArgs - handler to parse optional argument in square
+     *  brackets
+     * @return Node with text with arguments(text within brackets)
+     */
+    Node::ptr parseOptionalArgs();
+
+    Node::ptr parseGeneralArg(bool expand = false);
+
 
     // NOTE: as for me the return value "string" will be more logicaly than Node
     /**

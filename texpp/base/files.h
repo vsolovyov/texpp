@@ -119,6 +119,13 @@ public:
     bool invoke(Parser& parser, shared_ptr<Node> node);
 };
 
+class InputCommand: public Command
+{
+public:
+    InputCommand(const string& name): Command(name) {}
+    bool invoke(Parser & parser, shared_ptr<Node> node);
+};
+
 class InputBibliography: public Command
 {
 public:

@@ -17,9 +17,9 @@ add_executable(test_literal test_literal.cpp)
 target_link_libraries(test_literal _chrefliterals ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})
 add_test(test_literal ${EXECUTABLE_OUTPUT_PATH}/test_literal)
 
-add_executable(test_hrefkeywords test_citations.cc)
-target_link_libraries(test_hrefkeywords libtexpp _chrefliterals ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})
-add_test(test_hrefkeywords ${EXECUTABLE_OUTPUT_PATH}/test_hrefkeywords)
+add_executable(test_citations test_citations.cc)
+target_link_libraries(test_citations libtexpp _chrefliterals ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})
+add_test(test_citations ${EXECUTABLE_OUTPUT_PATH}/test_citations)
 
 if(TEX_FOUND)
     add_subdirectory(tex)
