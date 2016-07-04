@@ -123,7 +123,7 @@ boost::python::dict extractCiteFreequency(const Node::ptr document)
 
     Bibliography bib(bibliography);
     bib.feed(citations);
-    bib.show();
+    // bib.show();
 
     return bib.getDict();
 }
