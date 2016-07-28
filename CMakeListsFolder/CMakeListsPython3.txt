@@ -13,14 +13,14 @@ set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.56.0 COMPONENTS system filesystem regex python3 REQUIRED)
 
 # Find python interpreter
-find_package(PythonInterp 3.4)
+find_package(PythonInterp 3.5)
 if(NOT PYTHONINTERP_FOUND)
     message("python interpreter NOT found - tests/hrefkeywords will NOT be built.")
 endif(NOT PYTHONINTERP_FOUND)
 
-# Find python 3.4 libraries
-set(Python_ADDITIONAL_VERSIONS 3.4)
-find_package( PythonLibs 3.4  EXACT REQUIRED)
+# Find python 3.5 libraries
+set(Python_ADDITIONAL_VERSIONS 3.5)
+find_package( PythonLibs 3.5  EXACT REQUIRED)
 if(NOT PYTHONLIBS_FOUND)
     message("python libraries NOT found - texpy and hrefkeywords will NOT be built.")
 endif(NOT PYTHONLIBS_FOUND)
@@ -38,7 +38,7 @@ endif(TEX_EXECUTABLE STREQUAL "TEX_EXECUTABLE-NOTFOUND")
 mark_as_advanced(TEX_EXECUTABLE)
 
 # Flags
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -Woverloaded-virtual -Wwrite-strings")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wunused -Woverloaded-virtual -Wwrite-strings")
 include_directories(${CMAKE_SOURCE_DIR})
 
 # Subdirectories
