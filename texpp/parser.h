@@ -61,7 +61,7 @@ public:
      * @return string whitch is initial input TeX text within this actual node
      */
     string source(const string& fileName = string()) const;
-    unordered_map<shared_ptr<string>, string> sources() const;
+    std::unordered_map<shared_ptr<string>, string> sources() const;
 
     /**
      * @brief return a set of source files for curent Node
@@ -541,7 +541,7 @@ protected:
     };
     vector<ConditionalInfo> m_conditionals;
 
-    typedef unordered_map<
+    typedef std::unordered_map<
         string, pair< int, any >
     > SymbolTable;
 

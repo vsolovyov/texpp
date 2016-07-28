@@ -13,12 +13,12 @@ add_executable(test_parser test_parser.cc)
 target_link_libraries(test_parser libtexpp)
 add_test(test_parser ${EXECUTABLE_OUTPUT_PATH}/test_parser)
 
-add_executable(test_literal test_literal.cpp)
-target_link_libraries(test_literal _chrefliterals ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})
-add_test(test_literal ${EXECUTABLE_OUTPUT_PATH}/test_literal)
+# add_executable(test_literal test_literal.cpp)
+# target_link_libraries(test_literal _chrefliterals ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})
+# add_test(test_literal ${EXECUTABLE_OUTPUT_PATH}/test_literal)
 
 add_executable(test_citations test_citations.cc)
-target_link_libraries(test_citations libtexpp _chrefliterals ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${ICU_LIBRARIES})
+target_link_libraries(test_citations libtexpp _chrefliterals ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 add_test(test_citations ${EXECUTABLE_OUTPUT_PATH}/test_citations)
 
 if(TEX_FOUND)

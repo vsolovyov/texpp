@@ -5,18 +5,18 @@
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include "stem_include/english_stem.h"
-#include "stem_include/french_stem.h"
-#include "stem_include/german_stem.h"
-#include "stem_include/finnish_stem.h"
-#include "stem_include/swedish_stem.h"
-#include "stem_include/spanish_stem.h"
-#include "stem_include/dutch_stem.h"
-#include "stem_include/danish_stem.h"
-#include "stem_include/italian_stem.h"
-#include "stem_include/norwegian_stem.h"
-#include "stem_include/portuguese_stem.h"
-#include "stem_include/russian_stem.h"
+/* #include "stem_include/english_stem.h" */
+/* #include "stem_include/french_stem.h" */
+/* #include "stem_include/german_stem.h" */
+/* #include "stem_include/finnish_stem.h" */
+/* #include "stem_include/swedish_stem.h" */
+/* #include "stem_include/spanish_stem.h" */
+/* #include "stem_include/dutch_stem.h" */
+/* #include "stem_include/danish_stem.h" */
+/* #include "stem_include/italian_stem.h" */
+/* #include "stem_include/norwegian_stem.h" */
+/* #include "stem_include/portuguese_stem.h" */
+/* #include "stem_include/russian_stem.h" */
 
 // exclude deprecated methods. They can be not maintained in the feature
 //#define BOOST_FILESYSTEM_NO_DEPRECATED
@@ -38,10 +38,10 @@
 #include "bibliography.h"
 
 #include <texpp/parser.h>
-#include <unicode/stringpiece.h>
-#include <unicode/unistr.h>
-#include <unicode/normalizer2.h>
-#include <unicode/schriter.h>
+/* #include <unicode/stringpiece.h> */
+/* #include <unicode/unistr.h> */
+/* #include <unicode/normalizer2.h> */
+/* #include <unicode/schriter.h> */
 
 #include <locale.h>
 #include <wchar.h>
@@ -131,7 +131,7 @@ std::wstring strToWStr(std::string input);
  * @return stemmed word if steming passed successful.
  *      return the input word otherwise
  */
-std::wstring stem_wstring(std::wstring input, bool multilang=false);
+/* std::wstring stem_wstring(std::wstring input, bool multilang=false); */
 
 /**
  * @brief normLiteral - separate input literal from unpredicted kind of symbols,
@@ -146,10 +146,10 @@ std::wstring stem_wstring(std::wstring input, bool multilang=false);
  * @param multilang - bool variable. Will support multilingualism?
  * @return normalized string
  */
-std::string normLiteral(std::string literal,
-                        const WordsDict* wordsDict,
-                        const boost::python::dict& whiteList,
-                        bool multilang);
+/* std::string normLiteral(std::string literal, */
+/*                         const WordsDict* wordsDict, */
+/*                         const boost::python::dict& whiteList, */
+/*                         bool multilang); */
 
 /**
  * @brief absolutePath - return absolute path string assembled from the arguments.
@@ -283,12 +283,12 @@ string getDocumentEncoding(const Node::ptr node);
  * @param multilang - multilanguage support
  * @return
  */
-TextTagList findLiterals(const TextTagList& tags,
-                         const dict& literals,
-                         const dict& notLiterals,
-                         const WordsDict* wordsDict,
-                         const dict& whiteList,
-                         size_t maxChars = 0,
-                         bool multilang=false);
+/* TextTagList findLiterals(const TextTagList& tags, */
+/*                          const dict& literals, */
+/*                          const dict& notLiterals, */
+/*                          const WordsDict* wordsDict, */
+/*                          const dict& whiteList, */
+/*                          size_t maxChars = 0, */
+/*                          bool multilang=false); */
 
 #endif // _CHREFLITERALS_H

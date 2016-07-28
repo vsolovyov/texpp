@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(texpp)
 
+if(APPLE)
+    set(CMAKE_MACOSX_RPATH 1)
+endif(APPLE)
+
 # Enable testing
 include(CTest)
 
@@ -23,7 +27,6 @@ endif(NOT PYTHONLIBS_FOUND)
 
 # Find Unicode libraries
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
-find_package(ICU 4.4 REQUIRED)
 
 # Find tex executable (required for tests/tex and tests/hrefkeywords)
 find_program(TEX_EXECUTABLE "tex")
@@ -35,18 +38,8 @@ endif(TEX_EXECUTABLE STREQUAL "TEX_EXECUTABLE-NOTFOUND")
 mark_as_advanced(TEX_EXECUTABLE)
 
 # Flags
-
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -Woverloaded-virtual -Wwrite-strings")
 include_directories(${CMAKE_SOURCE_DIR})
-
-#include(CheckCXXCompilerFlag)
-#CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-#if(COMPILER_SUPPORTS_CXX11)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-#else()
-#        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-#endif()
-
 
 # Subdirectories
 add_subdirectory(texpp)

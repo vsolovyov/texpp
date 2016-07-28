@@ -28,7 +28,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
 
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 #ifndef WINDOWS
 #define PATH_SEP '/'
@@ -45,7 +45,7 @@ namespace texpp {
     using std::string;
     using std::vector;
     using std::pair;
-    using std::tr1::unordered_map;
+    using std::unordered_map;
     //using std::tr1::shared_ptr;
     //using std::tr1::weak_ptr;
 
@@ -78,13 +78,13 @@ namespace texpp {
 /**
  *  redefining operator() for boost::shared_ptr as getter to owned sourse
  */
-namespace std { namespace tr1 {
+namespace std {
     template<typename T> struct hash< texpp::shared_ptr<T> > {
         size_t operator()(const texpp::shared_ptr<T>& v) const {
             return hash< void* >()( v.get() );
         }
     };
-}} // namespace tr1 // namespace std
+} // namespace tr1 // namespace std
 
 #endif
 
