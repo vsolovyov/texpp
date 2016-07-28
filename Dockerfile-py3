@@ -1,0 +1,12 @@
+FROM ubuntu:16.04
+
+RUN set -x \
+    && apt-get update \
+    && apt-get install -y gcc g++ cmake libbz2-dev libboost-dev \
+               libboost-filesystem-dev libboost-regex-dev
+RUN apt-get install -y python3.5-dev
+ENV PYTHON_VERSION=3.5
+
+RUN mkdir /code /build
+WORKDIR /build
+CMD ["bash"]
