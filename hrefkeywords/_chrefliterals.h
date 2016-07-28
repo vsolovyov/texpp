@@ -232,8 +232,8 @@ string textTagListRepr(const TextTagList& list);
  */
 struct TextTagPickeSuite: pickle_suite
 {
-    static tuple getinitargs(const TextTag& tag) {
-        return make_tuple(int(tag.type), tag.start, tag.end, tag.value);
+    static boost::python::tuple getinitargs(const TextTag& tag) {
+        return boost::python::make_tuple(int(tag.type), tag.start, tag.end, tag.value);
     }
 };
 

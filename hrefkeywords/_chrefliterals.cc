@@ -383,7 +383,7 @@ list TextTagListPickeSuite::getstate(const TextTagList& l) {
     list ret;
     TextTagList::const_iterator e = l.end();
     for(TextTagList::const_iterator it = l.begin(); it != e; ++it) {
-        ret.append(make_tuple(int(it->type), it->start, it->end, it->value));
+        ret.append(boost::python::make_tuple(int(it->type), it->start, it->end, it->value));
     }
     return ret;
 }
