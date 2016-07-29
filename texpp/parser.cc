@@ -2638,5 +2638,16 @@ Node::ptr Parser::parse()
     return document;
 }
 
+bool Bundle::file_exists(const string &fname) {
+    return false;
+}
+
+long Bundle::get_file_size(const string &fname) {
+    return 0;
+}
+
+shared_ptr<std::istream> Bundle::get_file(const string &fname) {
+    return shared_ptr<std::istream>();
+}
 } // namespace texpp
 

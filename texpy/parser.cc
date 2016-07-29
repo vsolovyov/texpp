@@ -134,6 +134,19 @@ PARSER_OVERLOADS(parseToken, 0, 1)
 PARSER_OVERLOADS(parseGeneralText, 1, 2)
 PARSER_OVERLOADS(parseControlSequence, 0, 1)
 
+void export_bundle()
+{
+    using namespace boost::python;
+    using namespace texpp;
+    using boost::any;
+
+    scope scopeBundle = class_<Bundle, shared_ptr<Bundle> >("Bundle")
+        .def("file_exists", &Bundle::file_exists)
+        .def("get_file", &Bundle::get_file)
+        .def("get_file_size", &Bundle::get_file_size)
+        ;
+}
+
 void export_parser()
 {
     using namespace boost::python;
@@ -141,6 +154,7 @@ void export_parser()
     using boost::any;
 
     export_node();
+    export_bundle();
 
     scope scopeParser = class_<Parser, boost::noncopyable >("Parser",
             init<std::string, shared_ptr<std::istream>,
@@ -151,10 +165,14 @@ void export_parser()
         .def(init<std::string, shared_ptr<std::istream> >())
 
         .def("parse", &Parser::parse)
+            .def("file_exists", &Parser::file_exists)
+            .def("get_file_size", &Parser::get_file_size)
+            .def("get_file", &Parser::get_file)
 
         .def("workdir", &Parser::workdir,
             return_value_policy<copy_const_reference>())
         .def("setWorkdir", &Parser::setWorkdir)
+        .def("setBundle", &Parser::setBundle)
 
         // Tokens
         .def("peekToken", &Parser::peekToken,

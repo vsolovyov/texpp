@@ -163,6 +163,16 @@ protected:
     ChildrenList            m_children; // list of inner node+tag pairs
 };
 
+
+class Bundle
+{
+public:
+    bool file_exists(const string& fname);
+    long get_file_size(const string& fname);
+    shared_ptr<std::istream> get_file(const string& fname);
+};
+
+
 class Parser
 {
 public:
@@ -201,6 +211,8 @@ public:
 
     const string& workdir() const { return m_workdir; }
     void setWorkdir(const string& workdir) { m_workdir = workdir; }
+
+    void setBundle(const Bundle bundle) { m_bundle = bundle; }
 
     bool ignoreEmergency() const { return m_ignoreEmergency; }
     void setIgnoreEmergency(bool ignoreEmergency) {
@@ -263,6 +275,10 @@ public:
      *      clear m_noexpandTokens, m_tokenSource and m_token
      */
     void resetNoexpand() { m_noexpandTokens.clear(); pushBack(NULL); }
+
+    bool file_exists(const string& file_name) { return m_bundle.file_exists(file_name); }
+    long get_file_size(const string& file_name) { return m_bundle.get_file_size(file_name); }
+    shared_ptr<std::istream> get_file(const string& file_name) { return m_bundle.get_file(file_name); }
 
     void input(const string& fileName, const string& fullName);
     void end() { m_end = true; }
@@ -513,6 +529,7 @@ protected:
     > InputStack;
 
     string          m_workdir;
+    Bundle          m_bundle;
     bool            m_ignoreEmergency;
 
     shared_ptr<Lexer>   m_lexer;
