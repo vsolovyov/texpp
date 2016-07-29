@@ -4,7 +4,15 @@ RUN set -x \
     && apt-get update \
     && apt-get install -y gcc g++ cmake libbz2-dev libboost-dev \
                libboost-filesystem-dev libboost-regex-dev
-RUN apt-get install -y python3.5-dev
+RUN apt-get install -y python3.5-dev wget
+
+# compile boost-python by hand, since libboost-python-dev is built against py2.7
+RUN wget -O boost_1_58_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download
+RUN tar xzvf boost_1_58_0.tar.gz
+WORKDIR /boost_1_58_0/
+RUN ./bootstrap.sh --with-python=python3.5 --with-libraries=python --with-python-root=/usr
+RUN ./b2 --with-python -q install
+
 ENV PYTHON_VERSION=3.5
 
 RUN mkdir /code /build
