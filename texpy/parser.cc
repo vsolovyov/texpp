@@ -61,6 +61,44 @@ public:
 
 }}*/
 
+using boost::python::wrapper;
+using boost::python::override;
+using boost::python::object;
+
+class BundleWrap : public texpp::Bundle, public wrapper<texpp::Bundle>
+{
+public:
+    bool file_exists(const std::string& fname) {
+        override f = this->get_override("file_exists");
+        return f(fname);
+    }
+
+    long get_file_size(const std::string& fname) {
+        override f = this->get_override("get_file_size");
+        return f(fname);
+    }
+
+    boost::shared_ptr<std::istream> get_file(const std::string& fname) {
+        override f = this->get_override("get_file");
+        return f(fname);
+    }
+};
+
+
+void export_bundle()
+{
+    using namespace boost::python;
+    using namespace texpp;
+    using boost::any;
+
+    scope scopeBundle = class_<BundleWrap,
+            boost::noncopyable >("Bundle", init<>())
+            .def("file_exists", pure_virtual(&Bundle::file_exists))
+            .def("get_file", pure_virtual(&Bundle::get_file))
+            .def("get_file_size", pure_virtual(&Bundle::get_file_size))
+    ;
+}
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
     Node_treeRepr_overloads, treeRepr, 0, 1)
 
@@ -134,19 +172,6 @@ PARSER_OVERLOADS(parseToken, 0, 1)
 PARSER_OVERLOADS(parseGeneralText, 1, 2)
 PARSER_OVERLOADS(parseControlSequence, 0, 1)
 
-void export_bundle()
-{
-    using namespace boost::python;
-    using namespace texpp;
-    using boost::any;
-
-    scope scopeBundle = class_<Bundle, shared_ptr<Bundle> >("Bundle")
-        .def("file_exists", &Bundle::file_exists)
-        .def("get_file", &Bundle::get_file)
-        .def("get_file_size", &Bundle::get_file_size)
-        ;
-}
-
 void export_parser()
 {
     using namespace boost::python;
@@ -172,6 +197,8 @@ void export_parser()
         .def("workdir", &Parser::workdir,
             return_value_policy<copy_const_reference>())
         .def("setWorkdir", &Parser::setWorkdir)
+        .def("bundle", &Parser::bundle,
+             return_value_policy<copy_const_reference>())
         .def("setBundle", &Parser::setBundle)
 
         // Tokens

@@ -458,9 +458,11 @@ bool Input::invoke(Parser& parser, shared_ptr<Node> node)
     node->appendChild("file_name", fnameNode);
 
     string fname = fnameNode->value(string());
-    string fullname = kpsewhich(fname, parser.workdir());
+    parser.bundleInput(fname);
 
-    parser.input(fname, fullname);
+    /*string fullname = kpsewhich(fname, parser.workdir());
+
+    parser.input(fname, fullname);*/
 
     return true;
 }
@@ -483,13 +485,14 @@ bool InputCommand::invoke(Parser &parser, shared_ptr<Node> node)
     // NOTE: Temporary disable this package
     if(fname == "xy"){ return true; }
 
-    string workDir = parser.workdir();
+    /*string workDir = parser.workdir();
     if(workDir == ""){
         string currentFileName = parser.lexer()->fileName();
         workDir = currentFileName.substr(0,currentFileName.rfind("/")+1);
-    }
-    string fullname = kpsewhich(fname, workDir);
-    parser.input(fname, fullname);
+    }*/
+    parser.bundleInput(fname);
+    /* string fullname = kpsewhich(fname, workDir);
+    parser.input(fname, fullname); */
     return true;
 }
 
@@ -499,13 +502,12 @@ bool InputBibliography::invoke(Parser &parser, shared_ptr<Node> node)
     node->appendChild("file_name", fnameNode);
 
     // find name of external biblioghraphy filename
-    string currentFileName = parser.lexer()->fileName();
-    string workDir = currentFileName.substr(0,currentFileName.rfind("/")+1);
     string bibSource = fnameNode->value(string()) + ".bbl";
+    parser.bundleInput(bibSource);
 
-    string fullname = kpsewhich(bibSource, workDir);
+    /*string fullname = kpsewhich(bibSource, workDir);
 
-    parser.input(bibSource, fullname);
+    parser.input(bibSource, fullname);*/
 
     return true;
 }

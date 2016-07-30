@@ -937,6 +937,36 @@ void Parser::pushBack(vector< Token::ptr >* tokenVector)
     // NOTE: lastToken is NOT changed
 }
 
+void Parser::bundleInput(const string &fileName) {
+    shared_ptr<std::istream> istream = m_bundle->get_file(fileName);
+    if(!istream || istream->fail()) {
+        logger()->log(Logger::ERROR,
+                      "I can't find file `" + fileName + "'",
+                      *this, lastToken());
+
+        logger()->log(Logger::ERROR,
+                      "Emergency stop",
+                      *this, lastToken());
+
+        if(!ignoreEmergency())
+            end();
+
+        return;
+    }
+
+    m_inputStack.push_back(std::make_pair(m_lexer, m_tokenQueue));
+
+    shared_ptr<Lexer> lexer(new Lexer(fileName, istream, false, true));
+    lexer->setEndlinechar(m_lexer->endlinechar());
+    for(int n=0; n<256; ++n) {
+        lexer->assignCatCode(n, m_lexer->getCatCode(n));
+    }
+
+    m_lexer = lexer;
+    m_tokenQueue.clear();
+    logger()->log(Logger::MESSAGE, "(" + fileName, *this, lastToken());
+}
+
 void Parser::input(const string& fileName, const string& fullName)
 {
     // TODO: stop scaning genericText on file boundary
@@ -2638,16 +2668,14 @@ Node::ptr Parser::parse()
     return document;
 }
 
-bool Bundle::file_exists(const string &fname) {
-    return false;
-}
+    string Parser::get_file(const string &file_name) {
+        const shared_ptr <std::istream> smth = m_bundle->get_file(file_name);
+        boost::uint16_t len;
+        smth->read((char*)&len, 2);
 
-long Bundle::get_file_size(const string &fname) {
-    return 0;
-}
-
-shared_ptr<std::istream> Bundle::get_file(const string &fname) {
-    return shared_ptr<std::istream>();
-}
+        std::string res(len, '\0');
+        smth->read(&res[0], len);
+        return res;
+    }
 } // namespace texpp
 

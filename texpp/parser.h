@@ -167,9 +167,10 @@ protected:
 class Bundle
 {
 public:
-    bool file_exists(const string& fname);
-    long get_file_size(const string& fname);
-    shared_ptr<std::istream> get_file(const string& fname);
+    virtual bool file_exists(const string& fname) = 0;
+    virtual long get_file_size(const string& fname)= 0;
+    virtual shared_ptr<std::istream> get_file(const string& fname) = 0;
+protected:
 };
 
 
@@ -212,7 +213,8 @@ public:
     const string& workdir() const { return m_workdir; }
     void setWorkdir(const string& workdir) { m_workdir = workdir; }
 
-    void setBundle(const Bundle bundle) { m_bundle = bundle; }
+    const Bundle& bundle() const { return *m_bundle; }
+    void setBundle(Bundle *bundle) { m_bundle = bundle; }
 
     bool ignoreEmergency() const { return m_ignoreEmergency; }
     void setIgnoreEmergency(bool ignoreEmergency) {
@@ -276,11 +278,12 @@ public:
      */
     void resetNoexpand() { m_noexpandTokens.clear(); pushBack(NULL); }
 
-    bool file_exists(const string& file_name) { return m_bundle.file_exists(file_name); }
-    long get_file_size(const string& file_name) { return m_bundle.get_file_size(file_name); }
-    shared_ptr<std::istream> get_file(const string& file_name) { return m_bundle.get_file(file_name); }
+    bool file_exists(const string& file_name) { return m_bundle->file_exists(file_name); }
+    long get_file_size(const string& file_name) { return m_bundle->get_file_size(file_name); }
+    string get_file(const string& file_name);
 
     void input(const string& fileName, const string& fullName);
+    void bundleInput(const string& fileName);
     void end() { m_end = true; }
     void endinput() { m_endinput = true; }
 
@@ -529,7 +532,7 @@ protected:
     > InputStack;
 
     string          m_workdir;
-    Bundle          m_bundle;
+    Bundle*         m_bundle;
     bool            m_ignoreEmergency;
 
     shared_ptr<Lexer>   m_lexer;
