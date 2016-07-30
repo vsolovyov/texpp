@@ -829,7 +829,7 @@ Token::ptr Parser::peekToken(bool expand)
         if(!m_lexer->interactive()) {
             // Return the rest of the document as skipped tokens
             Token::ptr token;
-            while(token = rawNextToken(false)) {
+            while((token = rawNextToken(false))) {
                 token->setType(Token::TOK_SKIPPED);
                 m_tokenSource.push_back(token);
             }
@@ -2026,7 +2026,7 @@ Node::ptr Parser::parseBalancedText(bool expand,
 
     int level = 0;
     Token::ptr token;
-    while(token = peekToken(expand)) {
+    while((token = peekToken(expand))) {
         if(token->isCharacterCat(Token::CC_BGROUP)) {
             ++level;
         } else if(token->isCharacterCat(Token::CC_EGROUP)) {

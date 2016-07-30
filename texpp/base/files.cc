@@ -160,7 +160,7 @@ bool Read::invokeWithPrefixes(Parser& parser, shared_ptr<Node> node,
 
     int level = 0;
     Token::ptr token;
-    while(token = lexer->nextToken()) {
+    while((token = lexer->nextToken())) {
         if(!token->isSkipped()) {
             if(token->isCharacterCat(Token::CC_BGROUP))
                 ++level;
