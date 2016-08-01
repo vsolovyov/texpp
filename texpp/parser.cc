@@ -2648,14 +2648,5 @@ Node::ptr Parser::parse()
     return document;
 }
 
-    string Parser::get_file(const string &file_name) {
-        const shared_ptr <std::istream> smth = m_bundle->get_file(file_name);
-        boost::uint16_t len;
-        smth->read((char*)&len, 2);
-
-        std::string res(len, '\0');
-        smth->read(&res[0], len);
-        return res;
-    }
 } // namespace texpp
 

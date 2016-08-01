@@ -202,15 +202,11 @@ void export_parser()
         .def(init<std::string, shared_ptr<std::istream> >())
 
         .def("parse", &Parser::parse)
-            .def("file_exists", &Parser::file_exists)
-            .def("get_file_size", &Parser::get_file_size)
-            .def("get_file", &Parser::get_file)
 
         .def("workdir", &Parser::workdir,
             return_value_policy<copy_const_reference>())
         .def("setWorkdir", &Parser::setWorkdir)
-        .def("bundle", &Parser::bundle,
-             return_value_policy<copy_const_reference>())
+        //.def("getBundle", &Parser::getBundle)
         .def("setBundle", &Parser::setBundle)
 
         // Tokens

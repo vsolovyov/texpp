@@ -280,10 +280,6 @@ public:
      */
     void resetNoexpand() { m_noexpandTokens.clear(); pushBack(NULL); }
 
-    bool file_exists(const string& file_name) { return m_bundle->file_exists(file_name); }
-    long get_file_size(const string& file_name) { return m_bundle->get_file_size(file_name); }
-    string get_file(const string& file_name);
-
     void input(const string& fileName, const string& fullName);
     void bundleInput(const string& fileName);
     void end() { m_end = true; }

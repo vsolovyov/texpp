@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( parser_tokens )
     Token::ptr token, token1, token2;
 
     size_t n = 0;
-    while(token = parser->peekToken(false)) {
+    while((token = parser->peekToken(false))) {
         vector<Token::ptr> output_all;
         // first time n=0, parser lat token is "\\bb"
         BOOST_CHECK_EQUAL(parser->lastToken()->repr(),
