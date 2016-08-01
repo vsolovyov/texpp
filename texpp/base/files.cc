@@ -457,13 +457,11 @@ bool Input::invoke(Parser& parser, shared_ptr<Node> node)
     Node::ptr fnameNode = parser.parseFileName();
     node->appendChild("file_name", fnameNode);
 
-    string fname = fnameNode->value(string());
-    parser.bundleInput(fname);
-
+    string fname = fnameNode->valueString();
     /*string fullname = kpsewhich(fname, parser.workdir());
-
     parser.input(fname, fullname);*/
-
+    string fullname = parser.getBundle().get_tex_filename(fname);
+    parser.bundleInput(fullname);
     return true;
 }
 
@@ -478,8 +476,8 @@ bool InputCommand::invoke(Parser &parser, shared_ptr<Node> node)
     Node::ptr fnameNode = parser.parseFileName();
     node->appendChild("file_name", fnameNode);
     string fname = fnameNode->valueString();
-    if(fname.substr(0,1)== "{"){
-        fname = fname.substr(1, fname.size()-1);
+    if(fname.substr(0, 1) == "{") {
+        fname = fname.substr(1, fname.size() - 1);
     }
 
     // NOTE: Temporary disable this package
@@ -489,10 +487,12 @@ bool InputCommand::invoke(Parser &parser, shared_ptr<Node> node)
     if(workDir == ""){
         string currentFileName = parser.lexer()->fileName();
         workDir = currentFileName.substr(0,currentFileName.rfind("/")+1);
-    }*/
-    parser.bundleInput(fname);
-    /* string fullname = kpsewhich(fname, workDir);
+    }
+    string fullname = kpsewhich(fname, workDir);
     parser.input(fname, fullname); */
+
+    string fullname = parser.getBundle().get_tex_filename(fname);
+    parser.bundleInput(fullname);
     return true;
 }
 
@@ -502,13 +502,13 @@ bool InputBibliography::invoke(Parser &parser, shared_ptr<Node> node)
     node->appendChild("file_name", fnameNode);
 
     // find name of external biblioghraphy filename
-    string bibSource = fnameNode->value(string()) + ".bbl";
-    parser.bundleInput(bibSource);
-
-    /*string fullname = kpsewhich(bibSource, workDir);
-
+    /* string bibSource = fnameNode->value(string()) + ".bbl";
+    string fullname = kpsewhich(bibSource, workDir);
     parser.input(bibSource, fullname);*/
 
+    string fname = fnameNode->valueString();
+    string fullname = parser.getBundle().get_bib_filename(fname);
+    parser.bundleInput(fullname);
     return true;
 }
 

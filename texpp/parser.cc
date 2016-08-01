@@ -937,8 +937,10 @@ void Parser::pushBack(vector< Token::ptr >* tokenVector)
     // NOTE: lastToken is NOT changed
 }
 
-void Parser::bundleInput(const string &fileName) {
-    shared_ptr<std::istream> istream = m_bundle->get_file(fileName);
+void Parser::_inputStream(const string &fileName,
+                          const shared_ptr <std::istream> &istream) {
+    // TODO: stop scaning genericText on file boundary
+    // (for example \def\x{...} can't be spread across several files
     if(!istream || istream->fail()) {
         logger()->log(Logger::ERROR,
                       "I can't find file `" + fileName + "'",
@@ -967,38 +969,16 @@ void Parser::bundleInput(const string &fileName) {
     logger()->log(Logger::MESSAGE, "(" + fileName, *this, lastToken());
 }
 
+void Parser::bundleInput(const string &fileName) {
+    shared_ptr<std::istream> istream = m_bundle->get_file(fileName);
+    _inputStream(fileName, istream);
+
+}
+
 void Parser::input(const string& fileName, const string& fullName)
 {
-    // TODO: stop scaning genericText on file boundary
-    // (for example \def\x{...} can't be spread across several files
     shared_ptr<std::istream> istream(new std::ifstream(fullName.c_str()));
-    if(istream->fail()) {
-        logger()->log(Logger::ERROR,
-            "I can't find file `" + fileName + "'",
-            *this, lastToken());
-
-        logger()->log(Logger::ERROR,
-            "Emergency stop",
-            *this, lastToken());
-
-        if(!ignoreEmergency())
-            end();
-
-        return;
-    }
-
-    m_inputStack.push_back(std::make_pair(m_lexer, m_tokenQueue));
-
-    shared_ptr<Lexer> lexer(new Lexer(fullName, istream, false, true));
-    lexer->setEndlinechar(m_lexer->endlinechar());
-    for(int n=0; n<256; ++n) {
-        lexer->assignCatCode(n, m_lexer->getCatCode(n));
-    }
-
-    m_lexer = lexer;
-    m_tokenQueue.clear();
-
-    logger()->log(Logger::MESSAGE, "(" + fullName, *this, lastToken());
+    _inputStream(fullName, istream);
 }
 
 void Parser::endinputNow()

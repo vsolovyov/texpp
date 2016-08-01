@@ -82,6 +82,16 @@ public:
         override f = this->get_override("get_file");
         return f(fname);
     }
+
+    std::string get_bib_filename(const std::string& fname) {
+        override f = this->get_override("get_bib_filename");
+        return f(fname);
+    }
+
+    std::string get_tex_filename(const std::string& fname) {
+        override f = this->get_override("get_tex_filename");
+        return f(fname);
+    }
 };
 
 
@@ -96,6 +106,8 @@ void export_bundle()
             .def("file_exists", pure_virtual(&Bundle::file_exists))
             .def("get_file", pure_virtual(&Bundle::get_file))
             .def("get_file_size", pure_virtual(&Bundle::get_file_size))
+            .def("get_bib_filename", pure_virtual(&Bundle::get_bib_filename))
+            .def("get_tex_filename", pure_virtual(&Bundle::get_tex_filename))
     ;
 }
 

@@ -168,8 +168,10 @@ class Bundle
 {
 public:
     virtual bool file_exists(const string& fname) = 0;
-    virtual long get_file_size(const string& fname)= 0;
+    virtual long get_file_size(const string& fname) = 0;
     virtual shared_ptr<std::istream> get_file(const string& fname) = 0;
+    virtual string get_bib_filename(const string& fname) = 0;
+    virtual string get_tex_filename(const string& fname) = 0;
 protected:
 };
 
@@ -213,7 +215,7 @@ public:
     const string& workdir() const { return m_workdir; }
     void setWorkdir(const string& workdir) { m_workdir = workdir; }
 
-    const Bundle& bundle() const { return *m_bundle; }
+    Bundle& getBundle() { return *m_bundle; }
     void setBundle(Bundle *bundle) { m_bundle = bundle; }
 
     bool ignoreEmergency() const { return m_ignoreEmergency; }
@@ -508,6 +510,7 @@ protected:
                                     bool sElse = false, bool sOr = false);
     void setSpecialSymbol(const string& name, const any& value);
 
+    void _inputStream(const string &fileName, const shared_ptr<std::istream> &istream);
     /**
      * @brief initialising of m_symbols by control comands and control
      * variables. Filling m_catCodeTable lookup table for all 256 possible char
