@@ -2636,7 +2636,7 @@ Node::ptr Parser::parse()
     // peekToken reports EOF. Lets add that tokens to the last node.
     Node::ptr node = document;
     while(node->childrenCount() > 0)
-        node = node->child(node->childrenCount()-1);
+        node = node->child(node->childrenCount() - 1);
 
     nextToken(&node->tokens());
 

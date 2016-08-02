@@ -2,3 +2,4 @@ docker-deps
 results
 build
 .idea
+CMakeLists.txt

@@ -436,13 +436,13 @@ void _extractTextInfo(dict& result,
         if(type != TextTag::TT_OTHER) {
             // if child stems from single source file
             if(child->isOneFile()) {
-                // get name of source file. (TODO refactoring: file -> fileName)
-                shared_ptr<string> file = child->oneFile();
-                if(file && (file == lastFile ||
-                            isLocalFile(*file, workdir))) {
-                    if(file != lastFile || !tags) {
-                        lastFile = file;
-                        string ffile = absolutePath(*file, aWorkdir)
+                // get name of source file.
+                shared_ptr<string> fileName = child->oneFile();
+                if(fileName && (fileName == lastFile ||
+                            isLocalFile(*fileName, workdir))) {
+                    if(fileName != lastFile || !tags) {
+                        lastFile = fileName;
+                        string ffile = absolutePath(*fileName, aWorkdir)
                                         .substr(aWorkdir.size()+1);
                         TextTagList& tl = extract<TextTagList&>(
                             result.setdefault(ffile, TextTagList()));
