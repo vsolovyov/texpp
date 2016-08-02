@@ -2144,7 +2144,7 @@ Node::ptr Parser::parseOptionalArgs()
         while(peekToken())
         {
             value += nextToken(&args->tokens())->value();
-            if(lastToken()->isCharacter('[')){
+            if(lastToken()->isCharacter(']')) {
                 break;
             }
         }
