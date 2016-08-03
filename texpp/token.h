@@ -49,7 +49,7 @@ public:
                             during processing: comments, extra spaces, single
                             endline characters, ... */
         TOK_CHARACTER,  /*!< characters whitch shown as is: letters, numbers,
-                            punctuations, spases */
+                            punctuations, spaces */
         TOK_CONTROL     //!< control sequences: commands, begin/end group, EOL,...
     };
 

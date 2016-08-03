@@ -177,6 +177,21 @@ bool Newtheorem::invoke(Parser & parser, shared_ptr<Node> node)
     return true;
 }
 
+bool Newif::invoke(Parser &parser, shared_ptr<Node> node)
+{
+    // @ symbol is often used in newif names
+    parser.lexer()->assignCatCode(0x40, Token::CC_LETTER);
+    parser.setSymbol("catcode64", int(Token::CC_LETTER));
+
+    Node::ptr newifName(parser.parseNewIf());
+    node->setType("newif");
+    node->setValue(newifName->valueString());
+
+    parser.lexer()->assignCatCode(0x40, Token::CC_OTHER);
+    parser.setSymbol("catcode64", int(Token::CC_OTHER));
+    return true;
+}
+
 bool Documentclass::invoke(Parser & parser, shared_ptr<Node> node)
 {
     node->appendChild("options", parser.parseOptionalArgs());

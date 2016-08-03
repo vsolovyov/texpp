@@ -348,7 +348,7 @@ Token::ptr Lexer::nextToken()
             //// CC_COMMENT
             else if(m_catCode == Token::CC_COMMENT) {
                 m_state = ST_EOL;
-                m_charEnd = m_charPos;
+                m_charEnd = m_charPos; // include % itself in token
                 continue;
             }
             //// CC_IGNORED

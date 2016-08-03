@@ -204,6 +204,13 @@ public:
     bool invoke(Parser &parser, shared_ptr<Node> node);
 };
 
+class Newif: public Command
+{
+public:
+    Newif(const string& name = string()): Command(name) {}
+    bool invoke(Parser &parser, shared_ptr<Node> node);
+};
+
 class Documentclass: public Command
 {
 public:

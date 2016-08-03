@@ -328,6 +328,7 @@ public:
     Node::ptr parseControlSequence(bool expand = true);
 
     Node::ptr parseOptionalSpaces();
+    Node::ptr parseNewIf();
 
     /**
      * @brief parse next keyword one of keywords list. parseKeyword() can be used

@@ -1241,6 +1241,13 @@ Node::ptr Parser::parseOptionalSpaces()
     return node;
 }
 
+Node::ptr Parser::parseNewIf()
+{
+    Node::ptr node(new Node("newif"));
+    node->setValue(this->rawNextToken(false));
+    return node;
+}
+
 Node::ptr Parser::parseKeyword(const vector<string>& keywords)
 {
     Node::ptr node(new Node("keyword"));
