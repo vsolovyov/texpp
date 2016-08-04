@@ -158,5 +158,5 @@ boost::python::dict Bibliography::getDict()
 
 //BOOST_PYTHON_MODULE(citation)
 //{
-//    def("extractCiteFreequency", &extractCiteFreequency);
+//    def("extractCiteFrequency", &extractCiteFrequency);
 //}

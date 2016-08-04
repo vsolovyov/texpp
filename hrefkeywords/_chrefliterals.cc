@@ -663,5 +663,5 @@ BOOST_PYTHON_MODULE(_chrefliterals)
     def("getDocumentEncoding", &getDocumentEncoding);
     // def("findLiterals", &findLiterals);
     def("replaceLiterals", &replaceLiterals);
-    def("extractCiteFreequency", &extractCiteFrequency);
+    def("extractCiteFrequency", &extractCiteFrequency);
 }

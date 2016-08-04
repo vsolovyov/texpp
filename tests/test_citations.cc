@@ -49,7 +49,7 @@ int main()
 
     std::cout<< std::endl;
 
-    extractCiteFreequency(document);
+    extractCiteFrequency(document);
 
 //    dict d = extractTextInfo(document, ".*equation.*|.*eqn.*", "");
 //    list l = d.items();
