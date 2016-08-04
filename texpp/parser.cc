@@ -2285,9 +2285,9 @@ Node::ptr Parser::parseBibitem()
     if(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
 
-    if(peekToken()->isCharacterCat(Token::CC_EGROUP)){
+    if(peekToken()->isCharacterCat(Token::CC_EGROUP)) {
         nextToken(&node->tokens());
-    }else{
+    } else {
         logger()->log(Logger::MESSAGE, "bracket } is missing", *this, peekToken());
     }
 

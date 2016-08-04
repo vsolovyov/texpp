@@ -1,6 +1,7 @@
 DOCKER_DEPS=docker-deps
 PYTHON_VER=2
 CONTAINER_LABEL=texpp:python$(PYTHON_VER)
+BUILD_DIR=build-py$(PYTHON_VER)
 RESULTS_DIR=results/$(shell uname)-py$(PYTHON_VER)/
 ifeq ($(PYTHON_VER), 2)
   PYTHON_PREFIX=$(shell python-config --prefix)
@@ -20,20 +21,21 @@ help:
 	@echo "  version       check python versions"
 
 clean:
-	rm -rf build
+	rm -rf build-py2
+	rm -rf build-py3
 	rm -rf $(DOCKER_DEPS)
 
 build:
 	cp CMakeListsFolder/CMakeListsPython$(PYTHON_VER).txt CMakeLists.txt
-	@mkdir -p build
-	cd build \
+	@mkdir -p $(BUILD_DIR)
+	cd $(BUILD_DIR) \
 		&& cmake -DPYTHON_EXECUTABLE=`which python$(PYTHON_VER)` \
 			-DPYTHON_LIBRARY=$(PYTHON_PREFIX)/Python \
 			-DPYTHON_INCLUDE_DIR=$(PYTHON_PREFIX)/Headers \
 			-DCMAKE_BUILD_TYPE=Release .. \
 		&& make
 	@mkdir -p $(RESULTS_DIR)
-	cp build/hrefkeywords/_chrefliterals.so build/texpy/texpy.so $(RESULTS_DIR)
+	cp $(BUILD_DIR)/hrefkeywords/_chrefliterals.so build/texpy/texpy.so $(RESULTS_DIR)
 
 docker-build:
 	@mkdir -p $(DOCKER_DEPS)
