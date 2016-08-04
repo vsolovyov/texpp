@@ -117,6 +117,12 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
     Node_source_overloads, source, 0, 1)
 
+boost::python::tuple getValueTuple(texpp::Node::ptr& node)
+{
+    return boost::python::make_tuple(node->value(
+            std::make_pair(std::string(), std::string())));
+}
+
 void export_node()
 {
     using namespace boost::python;
@@ -124,7 +130,10 @@ void export_node()
 
     export_std_pair<string, Node::ptr>();
     export_std_pair<size_t, size_t>();
+    export_std_pair<string, string>();
     export_shared_ptr<string>();
+
+    def("getValueTuple", &getValueTuple);
 
     scope scopeNode = class_<Node, shared_ptr<Node> >(
             "Node", init<std::string>())
