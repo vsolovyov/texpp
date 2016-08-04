@@ -76,6 +76,11 @@ void initLaTeXstyle(Parser& parser)
     // citation
     __TEXPP_SET_COMMAND("cite", Cite);
     __TEXPP_SET_COMMAND("bibitem", Bibliography);
+    __TEXPP_SET_COMMAND("bib", Bibliography);
+    __TEXPP_SET_COMMAND("reference", Bibliography);
+    __TEXPP_SET_COMMAND("newref", Bibliography);
+    __TEXPP_SET_COMMAND("astrobibitem", Bibliography);
+    __TEXPP_SET_COMMAND("harvarditem", Bibliography);
 
     Token::ptr mathToken(new Token(Token::TOK_CHARACTER, Token::CC_MATHSHIFT, "$"));
     parser.setSymbol("\\(", TokenCommand(mathToken));
