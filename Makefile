@@ -32,10 +32,11 @@ build:
 		&& cmake -DPYTHON_EXECUTABLE=`which python$(PYTHON_VER)` \
 			-DPYTHON_LIBRARY=$(PYTHON_PREFIX)/Python \
 			-DPYTHON_INCLUDE_DIR=$(PYTHON_PREFIX)/Headers \
+			-DICU_ROOT_DIR=/usr/local/opt/icu4c \
 			-DCMAKE_BUILD_TYPE=Release .. \
 		&& make
 	@mkdir -p $(RESULTS_DIR)
-	cp $(BUILD_DIR)/hrefkeywords/_chrefliterals.so build/texpy/texpy.so $(RESULTS_DIR)
+	cp $(BUILD_DIR)/hrefkeywords/_chrefliterals.so $(BUILD_DIR)/texpy/texpy.so $(RESULTS_DIR)
 
 docker-build:
 	@mkdir -p $(DOCKER_DEPS)
