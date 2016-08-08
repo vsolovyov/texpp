@@ -1,5 +1,5 @@
-DOCKER_DEPS=docker-deps
 PYTHON_VER=2
+DOCKER_DEPS=docker-deps-py$(PYTHON_VER)
 CONTAINER_LABEL=texpp:python$(PYTHON_VER)
 BUILD_DIR=build-py$(PYTHON_VER)
 RESULTS_DIR=results/$(shell uname)-py$(PYTHON_VER)/
@@ -23,7 +23,8 @@ help:
 clean:
 	rm -rf build-py2
 	rm -rf build-py3
-	rm -rf $(DOCKER_DEPS)
+	rm -rf docker-deps-py2
+	rm -rf docker-deps-py3
 
 build:
 	cp CMakeListsFolder/CMakeListsPython$(PYTHON_VER).txt CMakeLists.txt
