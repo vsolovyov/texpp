@@ -2225,7 +2225,7 @@ Node::ptr Parser::parseFileName()
     if(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
 
-    if(peekToken()->isCharacterCat(Token::CC_EGROUP)) // LaTeX fiture {...}
+    if(peekToken() && peekToken()->isCharacterCat(Token::CC_EGROUP)) // LaTeX fiture {...}
         nextToken(&node->tokens());
 
     node->setValue(fileName);
