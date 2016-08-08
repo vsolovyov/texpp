@@ -1,8 +1,17 @@
 PYTHON_VER=2
 DOCKER_DEPS=docker-deps-py$(PYTHON_VER)
 CONTAINER_LABEL=texpp:python$(PYTHON_VER)
-BUILD_DIR=build-py$(PYTHON_VER)
-RESULTS_DIR=results/$(shell uname)-py$(PYTHON_VER)/
+
+ifeq ($(DEBUG), 1)
+  BUILD_DIR=build-py$(PYTHON_VER)-debug
+  BUILD_TYPE=Debug
+  RESULTS_DIR=results/$(shell uname)-py$(PYTHON_VER)-debug/
+else
+  BUILD_DIR=build-py$(PYTHON_VER)
+  BUILD_TYPE=Release
+  RESULTS_DIR=results/$(shell uname)-py$(PYTHON_VER)/
+endif
+
 ifeq ($(PYTHON_VER), 2)
   PYTHON_PREFIX=$(shell python-config --prefix)
 else
@@ -19,6 +28,7 @@ help:
 	@echo "  docker-build  build container"
 	@echo "  docker-run    start container to build new version"
 	@echo "  version       check python versions"
+	@echo "\nAdd \`DEBUG=1\` to make a debug build."
 
 clean:
 	rm -rf build-py2
@@ -34,7 +44,7 @@ build:
 			-DPYTHON_LIBRARY=$(PYTHON_PREFIX)/Python \
 			-DPYTHON_INCLUDE_DIR=$(PYTHON_PREFIX)/Headers \
 			-DICU_ROOT_DIR=/usr/local/opt/icu4c \
-			-DCMAKE_BUILD_TYPE=Release .. \
+			-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) .. \
 		&& make
 	@mkdir -p $(RESULTS_DIR)
 	cp $(BUILD_DIR)/hrefkeywords/_chrefliterals.so $(BUILD_DIR)/texpy/texpy.so $(RESULTS_DIR)
@@ -52,6 +62,8 @@ docker-run:
 			$(CONTAINER_LABEL) #/code/docker-build.sh
 
 version:
-	@echo PYTHON_VER=$(PYTHON_VER), CONTAINER_LABEL=$(CONTAINER_LABEL)
+	@echo PYTHON_VER=$(PYTHON_VER)
+	@echo BUILD_DIR=$(BUILD_DIR)
+	@echo CONTAINER_LABEL=$(CONTAINER_LABEL)
 	@echo RESULTS_DIR=$(RESULTS_DIR)
 	@echo PYTHON_PREFIX=$(PYTHON_PREFIX)
