@@ -119,8 +119,9 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
 
 boost::python::tuple getValueTuple(texpp::Node::ptr& node)
 {
-    return boost::python::make_tuple(node->value(
-            std::make_pair(std::string(), std::string())));
+    const std::pair<std::string, std::string> &nodeval = node->value(
+                std::make_pair(std::string(), std::string()));
+    return boost::python::make_tuple(nodeval.first, nodeval.second);
 }
 
 void export_node()
