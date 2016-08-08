@@ -115,7 +115,7 @@ public:
     int endlinechar() const { return m_endlinechar; }
     void setEndlinechar(int endlinechar) { m_endlinechar = endlinechar; }
 
-    int getCatCode(int ch) const { return m_catCodeTable[ch]; }
+    int getCatCode(int ch) const { return m_catCodeTable[(unsigned char) ch]; }
     void assignCatCode(int ch, int code) { m_catCodeTable[ch] = code; }
 
 protected:

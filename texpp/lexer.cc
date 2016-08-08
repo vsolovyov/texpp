@@ -172,6 +172,10 @@ bool Lexer::nextChar()
     // analysing what kind of symbol
     m_catCode = Token::CatCode(getCatCode(m_char));
 
+    // FIXME We badly need to handle Unicode here as well, because we're
+    // supplying UTF8 to texpp, and it's a multi-byte encoding for everything
+    // out of ASCII.
+
     // NOTE Bereziuk: some magic here
     if(m_catCode == Token::CC_SUPER && m_charPos+2 < m_lineTex.size() &&
                                     m_lineTex[m_charPos+1] == m_char) {
