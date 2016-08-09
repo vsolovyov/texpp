@@ -168,6 +168,7 @@ protected:
     size_t  m_lineNo;   // current line number
     size_t  m_charPos;  // actual position of next char in line
     size_t  m_charEnd;  // position of the last char in line
+    size_t  m_charLen;  // length if char is multi-byte (utf8)
 
     State   m_state;    // processing state
     int     m_char;     // buffer for symbol, next to parsing

@@ -160,7 +160,7 @@ bool Lexer::nextChar()
 {
     m_charPos = m_charEnd;      // move position to the end of previous char
 
-    if(m_charPos >= m_lineTex.size()) { // not more characters in line
+    if(m_charPos >= m_lineTex.size()) { // no more characters in line
         // move to "End Of Line" state
         m_char = -1;
         m_catCode = Token::CC_EOL;
@@ -168,13 +168,9 @@ bool Lexer::nextChar()
     }
 
     // m_char - next character
-    m_char = m_lineTex[m_charPos];
+    m_char = (unsigned char) m_lineTex[m_charPos];
     // analysing what kind of symbol
     m_catCode = Token::CatCode(getCatCode(m_char));
-
-    // FIXME We badly need to handle Unicode here as well, because we're
-    // supplying UTF8 to texpp, and it's a multi-byte encoding for everything
-    // out of ASCII.
 
     // NOTE Bereziuk: some magic here
     if(m_catCode == Token::CC_SUPER && m_charPos+2 < m_lineTex.size() &&
@@ -195,7 +191,24 @@ bool Lexer::nextChar()
         }
         m_catCode = Token::CatCode(getCatCode(m_char));
     } else {
-        m_charEnd = m_charPos + 1;
+        m_charLen = 1;
+
+        /* mask values for bit pattern of first byte in multi-byte
+         UTF-8 sequences:
+           192 - 110xxxxx - for U+0080 to U+07FF
+           224 - 1110xxxx - for U+0800 to U+FFFF
+           240 - 11110xxx - for U+010000 to U+1FFFFF */
+        if ((m_char & 192) == 192) {
+            m_charLen++;
+            if ((m_char & 224) == 224) {
+                m_charLen++;
+                if ((m_char & 240) == 240) {
+                    m_charLen++;
+                }
+            }
+            // TODO: we could determine CatCode for letters, space symbols, etc
+        }
+        m_charEnd = m_charPos + m_charLen;
     }
 
     // if actual character is last, include the rest of
@@ -208,17 +221,21 @@ bool Lexer::nextChar()
 inline Token::ptr Lexer::newToken(Token::Type type,
                                 const string& value)
 {
-    return Token::create(
-        type, m_catCode, 
-        value.empty() && m_char >= 0 ? string(1, m_char) : value,
-        m_lineOrig.substr(std::min(m_charPos, m_lineOrig.size()),
-                    m_charEnd - m_charPos),
-                m_linePos,
-                m_lineNo,
-                std::min(m_charPos, m_lineOrig.size()),
-                std::min(m_charEnd, m_lineOrig.size()),
-                m_charEnd >= m_lineTex.size(),
-                m_fileName);
+    const size_t pos = std::min(m_charPos, m_lineOrig.size());
+    string tokValue(value);
+    if (tokValue.empty() && m_char >= 0) {
+        tokValue = m_lineOrig.substr(pos, m_charLen);
+    }
+    const Token::ptr &tok = Token::create(
+            type, m_catCode, tokValue,
+            m_lineOrig.substr(pos, m_charEnd - m_charPos),
+                    m_linePos,
+                    m_lineNo,
+                    pos,
+                    std::min(m_charEnd, m_lineOrig.size()),
+                    m_charEnd >= m_lineTex.size(),
+                    m_fileName);
+    return tok;
 }
 
 Token::ptr Lexer::nextToken()
