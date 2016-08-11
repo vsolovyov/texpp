@@ -59,7 +59,7 @@ docker-run:
 	cp CMakeListsFolder/CMakeListsPython$(PYTHON_VER).txt $(DOCKER_DEPS)/CMakeLists.txt
 	docker run -it --rm --volume="$(CURDIR)/$(DOCKER_DEPS):/code" \
 						--volume="$(CURDIR)/results/Linux-py$(PYTHON_VER):/results" \
-			$(CONTAINER_LABEL) #/code/docker-build.sh
+			$(CONTAINER_LABEL) /code/docker-build.sh
 
 version:
 	@echo PYTHON_VER=$(PYTHON_VER)
