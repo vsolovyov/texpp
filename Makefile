@@ -18,16 +18,16 @@ else
   PYTHON_PREFIX=$(shell python$(PYTHON_VER)-config --prefix)
 endif
 
-.PHONY: docker-build docker-run clean build version
+.PHONY: docker-build-image linux-compile clean build version
 
 help:
 	@echo "Use \`make <target>\` with one of targets (you can override python" \
 		  "version using \`make <target> PYTHON_VER=3\`):"
-	@echo "  build         build right here"
-	@echo "  clean         clean previous build"
-	@echo "  docker-build  build container"
-	@echo "  docker-run    start container to build new version"
-	@echo "  version       check python versions"
+	@echo "  build               build right here"
+	@echo "  clean               clean previous build"
+	@echo "  docker-build-image  build image with environment for compilation"
+	@echo "  linux-compile       start container to compile new version"
+	@echo "  version             check python versions"
 	@echo "\nAdd \`DEBUG=1\` to make a debug build."
 
 clean:
@@ -49,17 +49,17 @@ build:
 	@mkdir -p $(RESULTS_DIR)
 	cp $(BUILD_DIR)/texpy/texpy.so $(RESULTS_DIR)
 
-docker-build:
+docker-build-image:
 	@mkdir -p $(DOCKER_DEPS)
 	cp Dockerfile-py$(PYTHON_VER) $(DOCKER_DEPS)/Dockerfile
-	cp -r CTestConfig.cmake FindICU.cmake docker-build.sh hrefkeywords tests texpp texpy $(DOCKER_DEPS)
+	cp -r CTestConfig.cmake FindICU.cmake docker-compile.sh hrefkeywords tests texpp texpy $(DOCKER_DEPS)
 	docker build -t $(CONTAINER_LABEL) $(DOCKER_DEPS)
 
-docker-run:
+linux-compile:
 	cp CMakeListsFolder/CMakeListsPython$(PYTHON_VER).txt $(DOCKER_DEPS)/CMakeLists.txt
 	docker run -it --rm --volume="$(CURDIR)/$(DOCKER_DEPS):/code" \
 						--volume="$(CURDIR)/results/Linux-py$(PYTHON_VER):/results" \
-			$(CONTAINER_LABEL) /code/docker-build.sh
+			$(CONTAINER_LABEL) /code/linux-compile.sh
 
 version:
 	@echo PYTHON_VER=$(PYTHON_VER)
