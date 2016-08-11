@@ -78,6 +78,11 @@ public:
         return f(fname);
     }
 
+    std::string get_mainfile_name() {
+        override f = this->get_override("get_mainfile_name");
+        return f();
+    }
+
     boost::shared_ptr<std::istream> get_file(const std::string& fname) {
         override f = this->get_override("get_file");
         return f(fname);
@@ -104,6 +109,7 @@ void export_bundle()
     scope scopeBundle = class_<BundleWrap,
             boost::noncopyable >("Bundle", init<>())
             .def("file_exists", pure_virtual(&Bundle::file_exists))
+            .def("get_mainfile_name", pure_virtual(&Bundle::get_mainfile_name))
             .def("get_file", pure_virtual(&Bundle::get_file))
             .def("get_file_size", pure_virtual(&Bundle::get_file_size))
             .def("get_bib_filename", pure_virtual(&Bundle::get_bib_filename))
@@ -204,20 +210,10 @@ void export_parser()
     export_bundle();
 
     scope scopeParser = class_<Parser, boost::noncopyable >("Parser",
-            init<std::string, shared_ptr<std::istream>,
-                 std::string, bool, bool, shared_ptr<Logger> >())
-        .def(init<std::string, shared_ptr<std::istream>, std::string, bool, bool>())
-        .def(init<std::string, shared_ptr<std::istream>, std::string, bool>())
-        .def(init<std::string, shared_ptr<std::istream>, std::string >())
-        .def(init<std::string, shared_ptr<std::istream> >())
+             init<shared_ptr<Bundle>, shared_ptr<Logger> >())
+        .def(init<shared_ptr<Bundle> >())
 
         .def("parse", &Parser::parse)
-
-        .def("workdir", &Parser::workdir,
-            return_value_policy<copy_const_reference>())
-        .def("setWorkdir", &Parser::setWorkdir)
-        //.def("getBundle", &Parser::getBundle)
-        .def("setBundle", &Parser::setBundle)
 
         // Tokens
         .def("peekToken", &Parser::peekToken,
@@ -258,7 +254,7 @@ void export_parser()
         .def("beginCustomGroup", &Parser::beginCustomGroup)
         .def("endCustomGroup", &Parser::endCustomGroup)
 
-        .def("input", &Parser::input)
+        .def("bundleInput", &Parser::bundleInput)
 
         .def("end", &Parser::end)
         ;

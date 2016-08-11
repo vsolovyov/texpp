@@ -49,11 +49,13 @@ bool Openin::invoke(Parser& parser, shared_ptr<Node> node)
     node->appendChild("file_name", fnameNode);
 
     string fname = fnameNode->value(string());
-    string fullname = kpsewhich(fname, parser.workdir());
+    string fullname = parser.getBundle()->get_tex_filename(fname);
+    //string fullname = kpsewhich(fname, parser.workdir());
     //std::cout << "name: '" << fnameNode->value(string()) << "'\n";
     //std::cout << "fullname: '" << fullname << "'\n";
 
-    shared_ptr<std::istream> istream(new std::ifstream(fullname.c_str()));
+    //shared_ptr<std::istream> istream(new std::ifstream(fullname.c_str()));
+    shared_ptr<std::istream> istream(parser.getBundle()->get_file(fullname));
     if(!istream->fail()) {
         shared_ptr<Lexer> lexer(new Lexer(fullname, istream));
         parser.setSymbol("read" + boost::lexical_cast<string>(stream),
@@ -129,13 +131,8 @@ bool Read::invokeWithPrefixes(Parser& parser, shared_ptr<Node> node,
             parser.logger()->log(Logger::ERROR,
                     "Emergency stop",
                     parser, parser.lastToken());
-            if(!parser.ignoreEmergency()) {
-                parser.end();
-                return true;
-            } else {
-                lexer = shared_ptr<Lexer>(new Lexer("",
-                    shared_ptr<std::istream>(new std::istringstream(""))));
-            }
+            lexer = shared_ptr<Lexer>(new Lexer("",
+                shared_ptr<std::istream>(new std::istringstream(""))));
         } else {
             // read from terminal
             //std::cin.sync();
@@ -275,8 +272,6 @@ bool Openout::invokeWithPrefixes(Parser& parser,
     } else {
         parser.logger()->log(Logger::ERROR, "Emergency stop",
                                 parser, parser.lastToken());
-        if(!parser.ignoreEmergency())
-            parser.end();
         //parser.setSymbol("write" + boost::lexical_cast<string>(stream),
         //                            OutFile(), true);
     }
@@ -460,7 +455,7 @@ bool Input::invoke(Parser& parser, shared_ptr<Node> node)
     string fname = fnameNode->valueString();
     /*string fullname = kpsewhich(fname, parser.workdir());
     parser.input(fname, fullname);*/
-    string fullname = parser.getBundle().get_tex_filename(fname);
+    string fullname = parser.getBundle()->get_tex_filename(fname);
     parser.bundleInput(fullname);
     return true;
 }
@@ -491,7 +486,7 @@ bool InputCommand::invoke(Parser &parser, shared_ptr<Node> node)
     string fullname = kpsewhich(fname, workDir);
     parser.input(fname, fullname); */
 
-    string fullname = parser.getBundle().get_tex_filename(fname);
+    string fullname = parser.getBundle()->get_tex_filename(fname);
     parser.bundleInput(fullname);
     return true;
 }
@@ -507,7 +502,7 @@ bool InputBibliography::invoke(Parser &parser, shared_ptr<Node> node)
     parser.input(bibSource, fullname);*/
 
     string fname = fnameNode->valueString();
-    string fullname = parser.getBundle().get_bib_filename(fname);
+    string fullname = parser.getBundle()->get_bib_filename(fname);
     parser.bundleInput(fullname);
     return true;
 }

@@ -169,6 +169,7 @@ class Bundle
 public:
     virtual bool file_exists(const string& fname) = 0;
     virtual long get_file_size(const string& fname) = 0;
+    virtual string get_mainfile_name() = 0;
     virtual shared_ptr<std::istream> get_file(const string& fname) = 0;
     virtual string get_bib_filename(const string& fname) = 0;
     virtual string get_tex_filename(const string& fname) = 0;
@@ -199,31 +200,15 @@ public:
                      GROUP_DMATH,
                      GROUP_CUSTOM };
 
-    Parser(const string& fileName, std::istream* file,
-            const string& workdir = string(),
-            bool interactive = false, bool ignoreEmergency = false,
-            shared_ptr<Logger> logger = shared_ptr<Logger>());
-
-    Parser(const string& fileName, shared_ptr<std::istream> file,
-            const string& workdir = string(),
-            bool interactive = false, bool ignoreEmergency = false,
-            shared_ptr<Logger> logger = shared_ptr<Logger>());
+    Parser(shared_ptr<Bundle> bundle,
+           shared_ptr<Logger> logger = shared_ptr<Logger>());
 
     Interaction interaction() const { return m_interaction; }
     void setInteraction(Interaction intr) { m_interaction = intr; }
 
-    const string& workdir() const { return m_workdir; }
-    void setWorkdir(const string& workdir) { m_workdir = workdir; }
+    shared_ptr<Bundle> getBundle() { return m_bundle; }
 
-    Bundle& getBundle() { return *m_bundle; }
-    void setBundle(Bundle *bundle) { m_bundle = bundle; }
-
-    bool ignoreEmergency() const { return m_ignoreEmergency; }
-    void setIgnoreEmergency(bool ignoreEmergency) {
-        m_ignoreEmergency = ignoreEmergency;
-    }
-   
-    ///////// Parse 
+    ///////// Parse
     Node::ptr parse();
 
     const string& modeName() const;
@@ -280,7 +265,6 @@ public:
      */
     void resetNoexpand() { m_noexpandTokens.clear(); pushBack(NULL); }
 
-    void input(const string& fileName, const string& fullName);
     void bundleInput(const string& fileName);
     void end() { m_end = true; }
     void endinput() { m_endinput = true; }
@@ -531,12 +515,9 @@ protected:
         pair<shared_ptr<Lexer>, TokenQueue>
     > InputStack;
 
-    string          m_workdir;
-    Bundle*         m_bundle;
-    bool            m_ignoreEmergency;
-
     shared_ptr<Lexer>   m_lexer;
     shared_ptr<Logger>  m_logger;
+    shared_ptr<Bundle>  m_bundle;
 
     Token::ptr      m_token;        // current token (in process)
     Token::list     m_tokenSource;  // token cache ("history") with actual token

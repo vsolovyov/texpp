@@ -237,34 +237,17 @@ std::pair<size_t, size_t> Node::sourcePos() const
     return pos;
 }
 
-Parser::Parser(const string& fileName, std::istream* file,
-        const string& workdir, bool interactive, bool ignoreEmergency,
-        shared_ptr<Logger> logger)
-    : m_workdir(workdir),
-      m_ignoreEmergency(ignoreEmergency),
-      m_logger(logger), m_groupLevel(0),
-      m_end(false), m_endinput(false), m_endinputNow(false),
-      m_lineNo(1), m_mode(NULLMODE), m_prevMode(NULLMODE),
-      m_hasOutput(false), m_currentGroupType(GROUP_DOCUMENT),
-      m_customGroupBegin(false), m_customGroupEnd(false),
-      m_interaction(ERRORSTOPMODE)
+Parser::Parser(shared_ptr<Bundle> bundle, shared_ptr<Logger> logger)
+        : m_logger(logger), m_bundle(bundle), m_groupLevel(0),
+          m_end(false), m_endinput(false), m_endinputNow(false),
+          m_lineNo(1), m_mode(NULLMODE), m_prevMode(NULLMODE),
+          m_hasOutput(false), m_currentGroupType(GROUP_DOCUMENT),
+          m_customGroupBegin(false), m_customGroupEnd(false),
+          m_interaction(ERRORSTOPMODE)
 {
-    m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, interactive, true));
-    init();
-}
-
-Parser::Parser(const string& fileName, shared_ptr<std::istream> file,
-        const string& workdir, bool interactive, bool ignoreEmergency,
-        shared_ptr<Logger> logger)
-    : m_workdir(workdir), m_ignoreEmergency(ignoreEmergency),
-      m_logger(logger), m_groupLevel(0),
-      m_end(false), m_endinput(false), m_endinputNow(false),
-      m_lineNo(1), m_mode(NULLMODE), m_prevMode(NULLMODE),
-      m_hasOutput(false), m_currentGroupType(GROUP_DOCUMENT),
-      m_customGroupBegin(false), m_customGroupEnd(false),
-      m_interaction(ERRORSTOPMODE)
-{
-    m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, interactive, true));
+    string fileName = bundle->get_mainfile_name();
+    shared_ptr<std::istream> file = bundle->get_file(fileName);
+    m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, false, true));
     init();
 }
 
@@ -950,9 +933,6 @@ void Parser::_inputStream(const string &fileName,
                       "Emergency stop",
                       *this, lastToken());
 
-        if(!ignoreEmergency())
-            end();
-
         return;
     }
 
@@ -972,13 +952,6 @@ void Parser::_inputStream(const string &fileName,
 void Parser::bundleInput(const string &fileName) {
     shared_ptr<std::istream> istream = m_bundle->get_file(fileName);
     _inputStream(fileName, istream);
-
-}
-
-void Parser::input(const string& fileName, const string& fullName)
-{
-    shared_ptr<std::istream> istream(new std::ifstream(fullName.c_str()));
-    _inputStream(fullName, istream);
 }
 
 void Parser::endinputNow()
