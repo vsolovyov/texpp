@@ -71,227 +71,227 @@ std::wstring strToWStr(string input)
 }
 
 // TODO: refactoring "input", "input_backup"
-// std::wstring stem_wstring(std::wstring input, bool multilang)
-// {
-//     std::wstring input_backup(input);
-//     stemming::english_stem<> StemEnglish;
-//     StemEnglish(input);
-//     if (input != input_backup && input.length() != 0)
-//         return input;
-//     input = input_backup;
-//     if (multilang)
-//     {
-//         stemming::french_stem<> StemFrench;
-//         StemFrench(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::german_stem<> StemGerman;
-//         StemGerman(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::spanish_stem<> StemSpanish;
-//         StemSpanish(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::italian_stem<> StemItalian;
-//         StemItalian(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::portuguese_stem<> StemPortuguese;
-//         StemPortuguese(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::dutch_stem<> StemDutch;
-//         StemDutch(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::danish_stem<> StemDanish;
-//         StemDanish(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::finnish_stem<> StemFinnish;
-//         StemFinnish(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::norwegian_stem<> StemNorwegian;
-//         StemNorwegian(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//         stemming::swedish_stem<> StemSwedish;
-//         StemSwedish(input);
-//         if (input != input_backup && input.length() != 0)
-//             return input;
-//         input = input_backup;
-//     }
-//     stemming::russian_stem<> StemRussian;
-//     StemRussian(input);
-//     if (input != input_backup && input.length() != 0)
-//         return input;
-//     return input_backup;
-// }
+std::wstring stem_wstring(std::wstring input, bool multilang)
+{
+    std::wstring input_backup(input);
+    stemming::english_stem<> StemEnglish;
+    StemEnglish(input);
+    if (input != input_backup && input.length() != 0)
+        return input;
+    input = input_backup;
+    if (multilang)
+    {
+        stemming::french_stem<> StemFrench;
+        StemFrench(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::german_stem<> StemGerman;
+        StemGerman(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::spanish_stem<> StemSpanish;
+        StemSpanish(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::italian_stem<> StemItalian;
+        StemItalian(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::portuguese_stem<> StemPortuguese;
+        StemPortuguese(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::dutch_stem<> StemDutch;
+        StemDutch(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::danish_stem<> StemDanish;
+        StemDanish(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::finnish_stem<> StemFinnish;
+        StemFinnish(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::norwegian_stem<> StemNorwegian;
+        StemNorwegian(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+        stemming::swedish_stem<> StemSwedish;
+        StemSwedish(input);
+        if (input != input_backup && input.length() != 0)
+            return input;
+        input = input_backup;
+    }
+    stemming::russian_stem<> StemRussian;
+    StemRussian(input);
+    if (input != input_backup && input.length() != 0)
+        return input;
+    return input_backup;
+}
 
-// string normLiteral(string literal,
-//                    const WordsDict* wordsDict,
-//                    const dict& whiteList,
-//                    bool multilang)
-// {
-//     stemming::english_stem<> StemEnglish;
-//     std::wstring nWLiteral;
-//     size_t wordStart = string::npos;
-//     size_t lastDot = string::npos;
-//     string unicodeNormLiteral;
-//     // work with plane text
-//     setlocale(LC_ALL, "en_US.UTF-8");
-//     /* Decompose unicode chars to the basic ones */
-//     UErrorCode ecode = U_ZERO_ERROR;
-//     // Use name="nfkc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFKC/NFKD
-//     const Normalizer2* normalizer = icu::Normalizer2::getInstance(
-//                 NULL, "nfkc", UNORM2_DECOMPOSE, ecode);
-//     // In ICU, a Unicode string consists of 16-bit Unicode code units
-//     UnicodeString finalStr;
-//     UnicodeString ULiteral = icu::UnicodeString::fromUTF8(StringPiece(literal));
-//     UnicodeString normULiteral = normalizer->normalize(ULiteral, ecode);
-//     StringCharacterIterator iter(normULiteral);
-//     // according to unicode format, we deal with code units.
-//     // code units goes to the finalStr i case they correspond to BASE character
-//     // (letters, numbers, spacing combining marks, and enclosing marks),
-//     // a BLANK character ("blank" or "horizontal space") or
-//     // a PUNCTUATION character.
-//     while(iter.hasNext())
-//     {
-//         if (u_isbase(iter.current()) ||
-//                 u_isblank(iter.current()) ||
-//                 u_ispunct(iter.current()))
-//             finalStr += iter.current();
-//         // move iterator to the next code unit
-//         iter.next();
-//     }
-//     // Convert the UnicodeString final to UTF-8 and append the result
-//     // to a standard string unicodeNormLiteral
-//     finalStr.toUTF8String(unicodeNormLiteral);
-//     std::wstring wLiteral = strToWStr(unicodeNormLiteral);
-//     size_t literalLength = wLiteral.length();
-//     /* convert to lowercase and check the whitelist */
-//     // if literal in known from whiteList abbreviation, than return it
-//     if(whiteList.has_key(wStrToStr(wLiteral, true))) return literal;
+string normLiteral(string literal,
+                   const WordsDict* wordsDict,
+                   const dict& whiteList,
+                   bool multilang)
+{
+    stemming::english_stem<> StemEnglish;
+    std::wstring nWLiteral;
+    size_t wordStart = string::npos;
+    size_t lastDot = string::npos;
+    string unicodeNormLiteral;
+    // work with plane text
+    setlocale(LC_ALL, "en_US.UTF-8");
+    /* Decompose unicode chars to the basic ones */
+    UErrorCode ecode = U_ZERO_ERROR;
+    // Use name="nfkc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFKC/NFKD
+    const Normalizer2* normalizer = icu::Normalizer2::getInstance(
+                NULL, "nfkc", UNORM2_DECOMPOSE, ecode);
+    // In ICU, a Unicode string consists of 16-bit Unicode code units
+    UnicodeString finalStr;
+    UnicodeString ULiteral = icu::UnicodeString::fromUTF8(StringPiece(literal));
+    UnicodeString normULiteral = normalizer->normalize(ULiteral, ecode);
+    StringCharacterIterator iter(normULiteral);
+    // according to unicode format, we deal with code units.
+    // code units goes to the finalStr i case they correspond to BASE character
+    // (letters, numbers, spacing combining marks, and enclosing marks),
+    // a BLANK character ("blank" or "horizontal space") or
+    // a PUNCTUATION character.
+    while(iter.hasNext())
+    {
+        if (u_isbase(iter.current()) ||
+                u_isblank(iter.current()) ||
+                u_ispunct(iter.current()))
+            finalStr += iter.current();
+        // move iterator to the next code unit
+        iter.next();
+    }
+    // Convert the UnicodeString final to UTF-8 and append the result
+    // to a standard string unicodeNormLiteral
+    finalStr.toUTF8String(unicodeNormLiteral);
+    std::wstring wLiteral = strToWStr(unicodeNormLiteral);
+    size_t literalLength = wLiteral.length();
+    /* convert to lowercase and check the whitelist */
+    // if literal in known from whiteList abbreviation, than return it
+    if(whiteList.has_key(wStrToStr(wLiteral, true))) return literal;
 
-//     /* TODO: handle 's */
-//     for(size_t n=0; ; ++n) {
-//         wchar_t ch = n < literalLength ? wLiteral[n] : 0;
+    /* TODO: handle 's */
+    for(size_t n=0; ; ++n) {
+        wchar_t ch = n < literalLength ? wLiteral[n] : 0;
 
-//         if(wordStart < n) { // inside a word
-//             if(iswalnum(ch)) {  // if ch is alpha or digit
-//                 // add to current word
-//             } else if(ch == '.') {
-//                 // add to current word and remember the dot position
-//                 lastDot = n;
-//             } else { // end of the word
+        if(wordStart < n) { // inside a word
+            if(iswalnum(ch)) {  // if ch is alpha or digit
+                // add to current word
+            } else if(ch == '.') {
+                // add to current word and remember the dot position
+                lastDot = n;
+            } else { // end of the word
 
-//                 // re-read current char next time
-//                 --n;
+                // re-read current char next time
+                --n;
                 
-//                 // check for the dot
-//                 if(lastDot < n) {
-//                     // dot present but not as the last char
-//                     n = lastDot;
-//                 }
+                // check for the dot
+                if(lastDot < n) {
+                    // dot present but not as the last char
+                    n = lastDot;
+                }
 
-//                 // extract and lower the word
-//                 bool isAbbr = false;    // tag - does the literal is abbreviation
-//                 size_t lastUpper = string::npos;
-//                 size_t firstLower = string::npos;
-//                 std::wstring word(wLiteral.begin() + wordStart, wLiteral.begin() + n + 1);
-//                 std::wstring word1(wLiteral.begin() + wordStart, wLiteral.begin() + n + 1);
+                // extract and lower the word
+                bool isAbbr = false;    // tag - does the literal is abbreviation
+                size_t lastUpper = string::npos;
+                size_t firstLower = string::npos;
+                std::wstring word(wLiteral.begin() + wordStart, wLiteral.begin() + n + 1);
+                std::wstring word1(wLiteral.begin() + wordStart, wLiteral.begin() + n + 1);
 
-//                 // reset the word
-//                 size_t pLastDot = lastDot;
-//                 wordStart = lastDot = string::npos;
+                // reset the word
+                size_t pLastDot = lastDot;
+                wordStart = lastDot = string::npos;
 
-//                 for(size_t k = 0; k < word.length(); ++k) {
-//                     if(iswupper(word1[k])) {
-//                         word1[k] = towlower(word1[k]);
-//                         lastUpper = k;
-//                         if(k != 0) isAbbr = true;
-//                     } else if(iswlower(word1[k])) {
-//                         if(firstLower > k) firstLower = k;
-//                     } else { // dot
-//                         isAbbr = true;
-//                     }
-//                 }
+                for(size_t k = 0; k < word.length(); ++k) {
+                    if(iswupper(word1[k])) {
+                        word1[k] = towlower(word1[k]);
+                        lastUpper = k;
+                        if(k != 0) isAbbr = true;
+                    } else if(iswlower(word1[k])) {
+                        if(firstLower > k) firstLower = k;
+                    } else { // dot
+                        isAbbr = true;
+                    }
+                }
 
-//                 //
-//                 if(n+1 < literalLength && _isIgnoredWord(wStrToStr(word))) {
-//                     // Skip articles, but not at the end
-//                     continue;
-//                 }
+                //
+                if(n+1 < literalLength && _isIgnoredWord(wStrToStr(word))) {
+                    // Skip articles, but not at the end
+                    continue;
+                }
 
-//                 // if the literal still didn`t marked as an abbreviation and length in limits
-//                 if(!isAbbr && word.length() <= wordsDict->abbrMaxLen()) {
-//                     // the word CAN BE by an abbreviation if word is NOT a part of wordsDict
-//                     isAbbr = !wordsDict->contains(wStrToStr(word));
-//                     if(isAbbr && lastUpper == 0)
-//                         isAbbr = !wordsDict->contains(wStrToStr(word1));
-//                 }
+                // if the literal still didn`t marked as an abbreviation and length in limits
+                if(!isAbbr && word.length() <= wordsDict->abbrMaxLen()) {
+                    // the word CAN BE by an abbreviation if word is NOT a part of wordsDict
+                    isAbbr = !wordsDict->contains(wStrToStr(word));
+                    if(isAbbr && lastUpper == 0)
+                        isAbbr = !wordsDict->contains(wStrToStr(word1));
+                }
                 
-//                 // process the word
-//                 if(isAbbr) {
-//                     if(pLastDot > n) { // if no dots in abbreviation
-//                         // Stem plural forms for uppercase abbrevations
-//                         if(word.length() > 2 && firstLower == word.length()-2 &&
-//                                 word[word.length()-2] == L'e' &&
-//                                 word[word.length()-1] == L's') {
-//                             // stem "ABCes" from "es" ending
-//                             word.resize(word.length() - 2);
-//                         } else if(word.length() > 1 && firstLower == word.length()-1 &&
-//                                 word[word.length()-1] == L's') {
-//                             // stem "ABCs" from "s" ending
-//                             word.resize(word.length() - 1);
-//                         }
-//                         // move abbreviation to upper and put dot after every letter
-//                         for(size_t k=0; k<word.length(); ++k) {
-//                             nWLiteral += iswlower(word[k]) ? towupper(word[k]) : word[k];
-//                             nWLiteral += (L'.');
-//                         }
-//                     } else {
-//                         for(size_t k=0; k<word.length(); ++k) {
-//                             nWLiteral += iswlower(word[k]) ? towupper(word[k]) : word[k];
-//                         }
-//                     }
-//                 } else {
-//                     nWLiteral += stem_wstring(word1, multilang);
-//                 }
-//             }
-//         } else { // not inside a word
-//             if(_isIgnored(ch)) {
-//                 continue;
-//             } else if(iswalnum(ch)) {   // if ch a alpha or digit
-//                 wordStart = n;          // mark the start of word
-//             } else if(ch == '\'' && n+1 < literalLength && (literal[n+1] == 's') &&
-//                     n != 0 && (iswalpha(literal[n-1]))) {
-//                 if(n+2==literalLength) break;
-//                 wchar_t ch2 = wLiteral[n+2];
-//                 if(iswalnum(ch2) || ch2 == '.')
-//                     nWLiteral += wLiteral[n];
-//                 else
-//                     ++n;
-//             } else if(n >= literalLength) { // end of literal has been reached
-//                 break;
-//             } else {
-//                 nWLiteral += wLiteral[n]; // use character as-is
-//             }
-//         }
-//     }
-//     return wStrToStr(nWLiteral);
-// }
+                // process the word
+                if(isAbbr) {
+                    if(pLastDot > n) { // if no dots in abbreviation
+                        // Stem plural forms for uppercase abbrevations
+                        if(word.length() > 2 && firstLower == word.length()-2 &&
+                                word[word.length()-2] == L'e' &&
+                                word[word.length()-1] == L's') {
+                            // stem "ABCes" from "es" ending
+                            word.resize(word.length() - 2);
+                        } else if(word.length() > 1 && firstLower == word.length()-1 &&
+                                word[word.length()-1] == L's') {
+                            // stem "ABCs" from "s" ending
+                            word.resize(word.length() - 1);
+                        }
+                        // move abbreviation to upper and put dot after every letter
+                        for(size_t k=0; k<word.length(); ++k) {
+                            nWLiteral += iswlower(word[k]) ? towupper(word[k]) : word[k];
+                            nWLiteral += (L'.');
+                        }
+                    } else {
+                        for(size_t k=0; k<word.length(); ++k) {
+                            nWLiteral += iswlower(word[k]) ? towupper(word[k]) : word[k];
+                        }
+                    }
+                } else {
+                    nWLiteral += stem_wstring(word1, multilang);
+                }
+            }
+        } else { // not inside a word
+            if(_isIgnored(ch)) {
+                continue;
+            } else if(iswalnum(ch)) {   // if ch a alpha or digit
+                wordStart = n;          // mark the start of word
+            } else if(ch == '\'' && n+1 < literalLength && (literal[n+1] == 's') &&
+                    n != 0 && (iswalpha(literal[n-1]))) {
+                if(n+2==literalLength) break;
+                wchar_t ch2 = wLiteral[n+2];
+                if(iswalnum(ch2) || ch2 == '.')
+                    nWLiteral += wLiteral[n];
+                else
+                    ++n;
+            } else if(n >= literalLength) { // end of literal has been reached
+                break;
+            } else {
+                nWLiteral += wLiteral[n]; // use character as-is
+            }
+        }
+    }
+    return wStrToStr(nWLiteral);
+}
 
 string absolutePath(const string& initPath, const string& workDir)
 {
@@ -494,109 +494,109 @@ string getDocumentEncoding(const Node::ptr node)
         return string("ascii");
 }
 
-// TextTagList findLiterals(const TextTagList& tags,
-//         const dict& literals, const dict& notLiterals,
-//         const WordsDict* wordsDict, const dict& whiteList,
-//         size_t maxChars, bool multilang)
-// {
-//     TextTagList result;
+TextTagList findLiterals(const TextTagList& tags,
+        const dict& literals, const dict& notLiterals,
+        const WordsDict* wordsDict, const dict& whiteList,
+        size_t maxChars, bool multilang)
+{
+    TextTagList result;
 
-//     // Detemine a maximum literal length
-//     if(maxChars == 0) {
-//         for(stl_input_iterator<str> it(literals.keys()), e;
-//                                                 it != e; ++it) {
-//             size_t l = len(*it);
-//             if(l > maxChars)
-//                 maxChars = l;
-//         }
-//     }
+    // Detemine a maximum literal length
+    if(maxChars == 0) {
+        for(stl_input_iterator<str> it(literals.keys()), e;
+                                                it != e; ++it) {
+            size_t l = len(*it);
+            if(l > maxChars)
+                maxChars = l;
+        }
+    }
 
-//     // Process the text
-//     size_t count = tags.size();
-//     for(size_t n = 0; n < count; ++n) {
-//         if(tags[n].type == TextTag::TT_CHARACTER) {
-//             // Do not start from ignored character
-//             if(_isIgnored(tags[n].wcvalue[0])) continue;
-//         } else if(tags[n].type != TextTag::TT_WORD) {
-//             // Ignore unknown tags
-//             continue;
-//         }
+    // Process the text
+    size_t count = tags.size();
+    for(size_t n = 0; n < count; ++n) {
+        if(tags[n].type == TextTag::TT_CHARACTER) {
+            // Do not start from ignored character
+            if(_isIgnored(tags[n].wcvalue[0])) continue;
+        } else if(tags[n].type != TextTag::TT_WORD) {
+            // Ignore unknown tags
+            continue;
+        }
 
-//         // If previous tag is character and is adjacent,
-//         // then it should be a space
-//         if(n && tags[n-1].end == tags[n].start &&
-//                 tags[n-1].type == TextTag::TT_CHARACTER &&
-//                 _isglue(tags[n-1].wcvalue[0])) {
-//             continue;
-//         }
+        // If previous tag is character and is adjacent,
+        // then it should be a space
+        if(n && tags[n-1].end == tags[n].start &&
+                tags[n-1].type == TextTag::TT_CHARACTER &&
+                _isglue(tags[n-1].wcvalue[0])) {
+            continue;
+        }
 
-//         // Do not start on an article
-//         if(_isIgnoredWord(tags[n].value)) {
-//             continue;
-//         }
+        // Do not start on an article
+        if(_isIgnoredWord(tags[n].value)) {
+            continue;
+        }
 
-//         string text;
-//         size_t pos = tags[n].start;
-//         std::vector<boost::tuple<string, size_t, size_t> > foundLiterals;
+        string text;
+        size_t pos = tags[n].start;
+        std::vector<boost::tuple<string, size_t, size_t> > foundLiterals;
 
-//         for(size_t k = n; k < count; ++k) {
-//             const TextTag& tagk = tags[k];
+        for(size_t k = n; k < count; ++k) {
+            const TextTag& tagk = tags[k];
 
-//             // Stop if tag is not adjacent
-//             if(tagk.start != pos) {
-//                 break;
-//             }
-//             pos = tagk.end;
+            // Stop if tag is not adjacent
+            if(tagk.start != pos) {
+                break;
+            }
+            pos = tagk.end;
 
-//             text += tagk.value;
-//             if(tagk.type == TextTag::TT_CHARACTER) {
-//                 // Skip ignored characters
-//                 if(_isIgnored(tagk.wcvalue[0])) continue;
-//             } else if(tagk.type != TextTag::TT_WORD) {
-//                 // Stop on unknown tags
-//                 break;
-//             }
+            text += tagk.value;
+            if(tagk.type == TextTag::TT_CHARACTER) {
+                // Skip ignored characters
+                if(_isIgnored(tagk.wcvalue[0])) continue;
+            } else if(tagk.type != TextTag::TT_WORD) {
+                // Stop on unknown tags
+                break;
+            }
 
-//             // If next tag is character and is adjacent,
-//             // then it should be a space
-//             if(k+1 < count && tags[k+1].start == tags[k].end &&
-//                     tags[k+1].type == TextTag::TT_CHARACTER &&
-//                     _isglue(tags[k+1].wcvalue[0])) {
-//                 continue;
-//             }
+            // If next tag is character and is adjacent,
+            // then it should be a space
+            if(k+1 < count && tags[k+1].start == tags[k].end &&
+                    tags[k+1].type == TextTag::TT_CHARACTER &&
+                    _isglue(tags[k+1].wcvalue[0])) {
+                continue;
+            }
 
-//             // Norm literal
-//             string literal = normLiteral(text, wordsDict, whiteList, multilang);
-//             if(literal.size() > maxChars) {
-//                 break; // XXX: can normLiteral size gets smaller ?
-//             }
+            // Norm literal
+            string literal = normLiteral(text, wordsDict, whiteList, multilang);
+            if(literal.size() > maxChars) {
+                break; // XXX: can normLiteral size gets smaller ?
+            }
 
-//             // Lookup in dictionary
-//             if(literals.has_key(literal)) {
-//                 // Skip known non-literal words
-//                 if((!notLiterals.has_key(text)) &&
-//                         (k+1>=count ||
-//                          tags[k+1].type != TextTag::TT_CHARACTER ||
-//                          tags[k+1].wcvalue[0] != L'.' ||
-//                          !notLiterals.has_key(text+'.'))) {
-//                     foundLiterals.push_back(
-//                             boost::make_tuple(literal, tagk.end, k));
-//                 }
-//             }
-//         }
+            // Lookup in dictionary
+            if(literals.has_key(literal)) {
+                // Skip known non-literal words
+                if((!notLiterals.has_key(text)) &&
+                        (k+1>=count ||
+                         tags[k+1].type != TextTag::TT_CHARACTER ||
+                         tags[k+1].wcvalue[0] != L'.' ||
+                         !notLiterals.has_key(text+'.'))) {
+                    foundLiterals.push_back(
+                            boost::make_tuple(literal, tagk.end, k));
+                }
+            }
+        }
 
-//         if(!foundLiterals.empty()) { // XXX: return all found literals !
-//             // Create a tag for the longest literal found
-//             result.push_back(TextTag(TextTag::TT_LITERAL,
-//                                      tags[n].start,
-//                                      foundLiterals.back().get<1>(),
-//                                      foundLiterals.back().get<0>()));
-//             n = foundLiterals.back().get<2>();
-//         }
-//     }
+        if(!foundLiterals.empty()) { // XXX: return all found literals !
+            // Create a tag for the longest literal found
+            result.push_back(TextTag(TextTag::TT_LITERAL,
+                                     tags[n].start,
+                                     foundLiterals.back().get<1>(),
+                                     foundLiterals.back().get<0>()));
+            n = foundLiterals.back().get<2>();
+        }
+    }
 
-//     return result;
-// }
+    return result;
+}
 
 string replaceLiterals(const string& source,
                     const TextTagList& tags)
@@ -658,10 +658,10 @@ BOOST_PYTHON_MODULE(_chrefliterals)
 
     def("absolutePath", &absolutePath);
     def("isLocalFile", &isLocalFile);
-    // def("normLiteral", &normLiteral);
+    def("normLiteral", &normLiteral);
     def("extractTextInfo", &extractTextInfo);
     def("getDocumentEncoding", &getDocumentEncoding);
-    // def("findLiterals", &findLiterals);
+    def("findLiterals", &findLiterals);
     def("replaceLiterals", &replaceLiterals);
     def("extractCiteFrequency", &extractCiteFrequency);
 }
