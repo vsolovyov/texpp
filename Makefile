@@ -47,12 +47,12 @@ build:
 			-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) .. \
 		&& make
 	@mkdir -p $(RESULTS_DIR)
-	cp $(BUILD_DIR)/hrefkeywords/_chrefliterals.so $(BUILD_DIR)/texpy/texpy.so $(RESULTS_DIR)
+	cp $(BUILD_DIR)/texpy/texpy.so $(RESULTS_DIR)
 
 docker-build:
 	@mkdir -p $(DOCKER_DEPS)
 	cp Dockerfile-py$(PYTHON_VER) $(DOCKER_DEPS)/Dockerfile
-	cp -r CTestConfig.cmake docker-build.sh hrefkeywords tests texpp texpy $(DOCKER_DEPS)
+	cp -r CTestConfig.cmake FindICU.cmake docker-build.sh hrefkeywords tests texpp texpy $(DOCKER_DEPS)
 	docker build -t $(CONTAINER_LABEL) $(DOCKER_DEPS)
 
 docker-run:
