@@ -52,7 +52,7 @@ build:
 docker-build-image:
 	@mkdir -p $(DOCKER_DEPS)
 	cp Dockerfile-py$(PYTHON_VER) $(DOCKER_DEPS)/Dockerfile
-	cp -r CTestConfig.cmake FindICU.cmake docker-compile.sh hrefkeywords tests texpp texpy $(DOCKER_DEPS)
+	cp -r CTestConfig.cmake FindICU.cmake linux-compile.sh hrefkeywords tests texpp texpy $(DOCKER_DEPS)
 	docker build -t $(CONTAINER_LABEL) $(DOCKER_DEPS)
 
 linux-compile:
