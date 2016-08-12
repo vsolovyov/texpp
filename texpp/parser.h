@@ -167,8 +167,6 @@ protected:
 class Bundle
 {
 public:
-    virtual bool file_exists(const string& fname) = 0;
-    virtual long get_file_size(const string& fname) = 0;
     virtual string get_mainfile_name() = 0;
     virtual shared_ptr<std::istream> get_file(const string& fname) = 0;
     virtual string get_bib_filename(const string& fname) = 0;

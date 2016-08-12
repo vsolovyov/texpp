@@ -27,6 +27,7 @@
 #include <texpp/command.h>
 #include <iostream>
 #include <sstream>
+#include <tests/testbundle.h>
 
 using namespace texpp;
 
@@ -47,10 +48,9 @@ public:
 
 shared_ptr<Parser> create_parser(const string& input)
 {
-    shared_ptr<std::istream> ifile(new std::istringstream(input));
-    return shared_ptr<Parser>(
-        new Parser("", ifile, "", false, false,
-                    shared_ptr<Logger>(new TestLogger)));
+    boost::shared_ptr<std::istream> ifile(new std::istringstream(input));
+    return shared_ptr<Parser>(new Parser(
+            shared_ptr<TestBundle>(new TestBundle("<test-name>", ifile))));
 }
 
 // "parser token test" handles letters and commands in the input.

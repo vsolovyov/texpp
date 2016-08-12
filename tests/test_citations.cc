@@ -5,6 +5,7 @@
 #include <texpp/logger.h>
 
 #include <texpp/base/bibliography.h>
+#include <tests/testbundle.h>
 
 using namespace boost::python;
 using namespace texpp;
@@ -40,8 +41,9 @@ int main()
 
     std::istream* file = new std::ifstream(fileName.c_str(), std::ifstream::in);
 
-    texpp::Parser parser(fileName, file, "", interactive, false,
-                    texpp::Logger::ptr(new texpp::ConsoleLogger));
+    texpp::Parser parser(
+            shared_ptr<TestBundle>(new TestBundle("<test-name>", file)),
+            texpp::Logger::ptr(new texpp::ConsoleLogger));
     texpp::Node::ptr document = parser.parse();
 
     std::cout << std::endl << "Parsed document: " << std::endl;

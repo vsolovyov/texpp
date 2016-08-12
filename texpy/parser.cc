@@ -68,16 +68,6 @@ using boost::python::object;
 class BundleWrap : public texpp::Bundle, public wrapper<texpp::Bundle>
 {
 public:
-    bool file_exists(const std::string& fname) {
-        override f = this->get_override("file_exists");
-        return f(fname);
-    }
-
-    long get_file_size(const std::string& fname) {
-        override f = this->get_override("get_file_size");
-        return f(fname);
-    }
-
     std::string get_mainfile_name() {
         override f = this->get_override("get_mainfile_name");
         return f();
@@ -108,10 +98,8 @@ void export_bundle()
 
     scope scopeBundle = class_<BundleWrap,
             boost::noncopyable >("Bundle", init<>())
-            .def("file_exists", pure_virtual(&Bundle::file_exists))
             .def("get_mainfile_name", pure_virtual(&Bundle::get_mainfile_name))
             .def("get_file", pure_virtual(&Bundle::get_file))
-            .def("get_file_size", pure_virtual(&Bundle::get_file_size))
             .def("get_bib_filename", pure_virtual(&Bundle::get_bib_filename))
             .def("get_tex_filename", pure_virtual(&Bundle::get_tex_filename))
     ;
