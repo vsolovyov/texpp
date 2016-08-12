@@ -114,12 +114,12 @@ void extractCitation(const Node::ptr node,
     }
 }
 
-boost::python::dict extractCiteFreequency(const Node::ptr document)
+boost::python::dict extractCiteFrequency(const Node::ptr document)
 {
     shared_ptr<CiteList> citations(new CiteList());
     shared_ptr<BibLib> bibliography(new BibLib());
 
-    extractCitation(document,citations,bibliography,"");
+    extractCitation(document, citations, bibliography, "");
 
     Bibliography bib(bibliography);
     bib.feed(citations);
@@ -147,7 +147,7 @@ boost::python::list toPythonList(std::vector<pair<int,string> > vec)
 boost::python::dict Bibliography::getDict()
 {
     boost::python::dict dictPy;
-    typedef std::map<string,BibCiteStruct>::iterator it_type;
+    typedef std::map<string, BibCiteStruct>::iterator it_type;
     for(it_type it = bibFrequency.begin(); it != bibFrequency.end(); it++)
     {
         BibCiteStruct bibItem = it->second;
@@ -158,5 +158,5 @@ boost::python::dict Bibliography::getDict()
 
 //BOOST_PYTHON_MODULE(citation)
 //{
-//    def("extractCiteFreequency", &extractCiteFreequency);
+//    def("extractCiteFrequency", &extractCiteFrequency);
 //}

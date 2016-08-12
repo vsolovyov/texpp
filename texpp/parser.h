@@ -163,6 +163,18 @@ protected:
     ChildrenList            m_children; // list of inner node+tag pairs
 };
 
+
+class Bundle
+{
+public:
+    virtual string get_mainfile_name() = 0;
+    virtual shared_ptr<std::istream> get_file(const string& fname) = 0;
+    virtual string get_bib_filename(const string& fname) = 0;
+    virtual string get_tex_filename(const string& fname) = 0;
+protected:
+};
+
+
 class Parser
 {
 public:
@@ -186,28 +198,15 @@ public:
                      GROUP_DMATH,
                      GROUP_CUSTOM };
 
-    Parser(const string& fileName, std::istream* file,
-            const string& workdir = string(),
-            bool interactive = false, bool ignoreEmergency = false,
-            shared_ptr<Logger> logger = shared_ptr<Logger>());
-
-    Parser(const string& fileName, shared_ptr<std::istream> file,
-            const string& workdir = string(),
-            bool interactive = false, bool ignoreEmergency = false,
-            shared_ptr<Logger> logger = shared_ptr<Logger>());
+    Parser(shared_ptr<Bundle> bundle,
+           shared_ptr<Logger> logger = shared_ptr<Logger>());
 
     Interaction interaction() const { return m_interaction; }
     void setInteraction(Interaction intr) { m_interaction = intr; }
 
-    const string& workdir() const { return m_workdir; }
-    void setWorkdir(const string& workdir) { m_workdir = workdir; }
+    shared_ptr<Bundle> getBundle() { return m_bundle; }
 
-    bool ignoreEmergency() const { return m_ignoreEmergency; }
-    void setIgnoreEmergency(bool ignoreEmergency) {
-        m_ignoreEmergency = ignoreEmergency;
-    }
-   
-    ///////// Parse 
+    ///////// Parse
     Node::ptr parse();
 
     const string& modeName() const;
@@ -264,7 +263,7 @@ public:
      */
     void resetNoexpand() { m_noexpandTokens.clear(); pushBack(NULL); }
 
-    void input(const string& fileName, const string& fullName);
+    void bundleInput(const string& fileName);
     void end() { m_end = true; }
     void endinput() { m_endinput = true; }
 
@@ -311,6 +310,7 @@ public:
     Node::ptr parseControlSequence(bool expand = true);
 
     Node::ptr parseOptionalSpaces();
+    Node::ptr parseNewIf();
 
     /**
      * @brief parse next keyword one of keywords list. parseKeyword() can be used
@@ -489,6 +489,7 @@ protected:
                                     bool sElse = false, bool sOr = false);
     void setSpecialSymbol(const string& name, const any& value);
 
+    void _inputStream(const string &fileName, const shared_ptr<std::istream> &istream);
     /**
      * @brief initialising of m_symbols by control comands and control
      * variables. Filling m_catCodeTable lookup table for all 256 possible char
@@ -512,11 +513,9 @@ protected:
         pair<shared_ptr<Lexer>, TokenQueue>
     > InputStack;
 
-    string          m_workdir;
-    bool            m_ignoreEmergency;
-
     shared_ptr<Lexer>   m_lexer;
     shared_ptr<Logger>  m_logger;
+    shared_ptr<Bundle>  m_bundle;
 
     Token::ptr      m_token;        // current token (in process)
     Token::list     m_tokenSource;  // token cache ("history") with actual token

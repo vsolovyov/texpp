@@ -115,7 +115,7 @@ public:
     int endlinechar() const { return m_endlinechar; }
     void setEndlinechar(int endlinechar) { m_endlinechar = endlinechar; }
 
-    int getCatCode(int ch) const { return m_catCodeTable[ch]; }
+    int getCatCode(int ch) const { return m_catCodeTable[(unsigned char) ch]; }
     void assignCatCode(int ch, int code) { m_catCodeTable[ch] = code; }
 
 protected:
@@ -168,6 +168,7 @@ protected:
     size_t  m_lineNo;   // current line number
     size_t  m_charPos;  // actual position of next char in line
     size_t  m_charEnd;  // position of the last char in line
+    size_t  m_charLen;  // length if char is multi-byte (utf8)
 
     State   m_state;    // processing state
     int     m_char;     // buffer for symbol, next to parsing

@@ -15,7 +15,7 @@ bool Cite::invoke(Parser &parser, shared_ptr<Node> node)
     Node::ptr citeNode = parser.parseCite();
     node->appendChild("cite_item", citeNode);
 
-    return 1;
+    return true;
 }
 
 } // namespace base

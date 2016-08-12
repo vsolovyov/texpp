@@ -49,11 +49,13 @@ bool Openin::invoke(Parser& parser, shared_ptr<Node> node)
     node->appendChild("file_name", fnameNode);
 
     string fname = fnameNode->value(string());
-    string fullname = kpsewhich(fname, parser.workdir());
+    string fullname = parser.getBundle()->get_tex_filename(fname);
+    //string fullname = kpsewhich(fname, parser.workdir());
     //std::cout << "name: '" << fnameNode->value(string()) << "'\n";
     //std::cout << "fullname: '" << fullname << "'\n";
 
-    shared_ptr<std::istream> istream(new std::ifstream(fullname.c_str()));
+    //shared_ptr<std::istream> istream(new std::ifstream(fullname.c_str()));
+    shared_ptr<std::istream> istream(parser.getBundle()->get_file(fullname));
     if(!istream->fail()) {
         shared_ptr<Lexer> lexer(new Lexer(fullname, istream));
         parser.setSymbol("read" + boost::lexical_cast<string>(stream),
@@ -129,13 +131,8 @@ bool Read::invokeWithPrefixes(Parser& parser, shared_ptr<Node> node,
             parser.logger()->log(Logger::ERROR,
                     "Emergency stop",
                     parser, parser.lastToken());
-            if(!parser.ignoreEmergency()) {
-                parser.end();
-                return true;
-            } else {
-                lexer = shared_ptr<Lexer>(new Lexer("",
-                    shared_ptr<std::istream>(new std::istringstream(""))));
-            }
+            lexer = shared_ptr<Lexer>(new Lexer("",
+                shared_ptr<std::istream>(new std::istringstream(""))));
         } else {
             // read from terminal
             //std::cin.sync();
@@ -160,7 +157,7 @@ bool Read::invokeWithPrefixes(Parser& parser, shared_ptr<Node> node,
 
     int level = 0;
     Token::ptr token;
-    while(token = lexer->nextToken()) {
+    while((token = lexer->nextToken())) {
         if(!token->isSkipped()) {
             if(token->isCharacterCat(Token::CC_BGROUP))
                 ++level;
@@ -275,8 +272,6 @@ bool Openout::invokeWithPrefixes(Parser& parser,
     } else {
         parser.logger()->log(Logger::ERROR, "Emergency stop",
                                 parser, parser.lastToken());
-        if(!parser.ignoreEmergency())
-            parser.end();
         //parser.setSymbol("write" + boost::lexical_cast<string>(stream),
         //                            OutFile(), true);
     }
@@ -457,11 +452,11 @@ bool Input::invoke(Parser& parser, shared_ptr<Node> node)
     Node::ptr fnameNode = parser.parseFileName();
     node->appendChild("file_name", fnameNode);
 
-    string fname = fnameNode->value(string());
-    string fullname = kpsewhich(fname, parser.workdir());
-
-    parser.input(fname, fullname);
-
+    string fname = fnameNode->valueString();
+    /*string fullname = kpsewhich(fname, parser.workdir());
+    parser.input(fname, fullname);*/
+    string fullname = parser.getBundle()->get_tex_filename(fname);
+    parser.bundleInput(fullname);
     return true;
 }
 
@@ -476,20 +471,23 @@ bool InputCommand::invoke(Parser &parser, shared_ptr<Node> node)
     Node::ptr fnameNode = parser.parseFileName();
     node->appendChild("file_name", fnameNode);
     string fname = fnameNode->valueString();
-    if(fname.substr(0,1)== "{"){
-        fname = fname.substr(1, fname.size()-1);
+    if(fname.substr(0, 1) == "{") {
+        fname = fname.substr(1, fname.size() - 1);
     }
 
     // NOTE: Temporary disable this package
     if(fname == "xy"){ return true; }
 
-    string workDir = parser.workdir();
+    /*string workDir = parser.workdir();
     if(workDir == ""){
         string currentFileName = parser.lexer()->fileName();
         workDir = currentFileName.substr(0,currentFileName.rfind("/")+1);
     }
     string fullname = kpsewhich(fname, workDir);
-    parser.input(fname, fullname);
+    parser.input(fname, fullname); */
+
+    string fullname = parser.getBundle()->get_tex_filename(fname);
+    parser.bundleInput(fullname);
     return true;
 }
 
@@ -499,14 +497,13 @@ bool InputBibliography::invoke(Parser &parser, shared_ptr<Node> node)
     node->appendChild("file_name", fnameNode);
 
     // find name of external biblioghraphy filename
-    string currentFileName = parser.lexer()->fileName();
-    string workDir = currentFileName.substr(0,currentFileName.rfind("/")+1);
-    string bibSource = fnameNode->value(string()) + ".bbl";
-
+    /* string bibSource = fnameNode->value(string()) + ".bbl";
     string fullname = kpsewhich(bibSource, workDir);
+    parser.input(bibSource, fullname);*/
 
-    parser.input(bibSource, fullname);
-
+    string fname = fnameNode->valueString();
+    string fullname = parser.getBundle()->get_bib_filename(fname);
+    parser.bundleInput(fullname);
     return true;
 }
 

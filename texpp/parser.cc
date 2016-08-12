@@ -63,7 +63,7 @@ const texpp::string modeNames[] = {
 
 namespace texpp {
 
-string Parser::BANNER = "This is TeXpp, Version 0.0";
+string Parser::BANNER = "This is TeXpp, Version 2.4";
 
 using base::Dimen;
 
@@ -237,34 +237,17 @@ std::pair<size_t, size_t> Node::sourcePos() const
     return pos;
 }
 
-Parser::Parser(const string& fileName, std::istream* file,
-        const string& workdir, bool interactive, bool ignoreEmergency,
-        shared_ptr<Logger> logger)
-    : m_workdir(workdir),
-      m_ignoreEmergency(ignoreEmergency),
-      m_logger(logger), m_groupLevel(0),
-      m_end(false), m_endinput(false), m_endinputNow(false),
-      m_lineNo(1), m_mode(NULLMODE), m_prevMode(NULLMODE),
-      m_hasOutput(false), m_currentGroupType(GROUP_DOCUMENT),
-      m_customGroupBegin(false), m_customGroupEnd(false),
-      m_interaction(ERRORSTOPMODE)
+Parser::Parser(shared_ptr<Bundle> bundle, shared_ptr<Logger> logger)
+        : m_logger(logger), m_bundle(bundle), m_groupLevel(0),
+          m_end(false), m_endinput(false), m_endinputNow(false),
+          m_lineNo(1), m_mode(NULLMODE), m_prevMode(NULLMODE),
+          m_hasOutput(false), m_currentGroupType(GROUP_DOCUMENT),
+          m_customGroupBegin(false), m_customGroupEnd(false),
+          m_interaction(ERRORSTOPMODE)
 {
-    m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, interactive, true));
-    init();
-}
-
-Parser::Parser(const string& fileName, shared_ptr<std::istream> file,
-        const string& workdir, bool interactive, bool ignoreEmergency,
-        shared_ptr<Logger> logger)
-    : m_workdir(workdir), m_ignoreEmergency(ignoreEmergency),
-      m_logger(logger), m_groupLevel(0),
-      m_end(false), m_endinput(false), m_endinputNow(false),
-      m_lineNo(1), m_mode(NULLMODE), m_prevMode(NULLMODE),
-      m_hasOutput(false), m_currentGroupType(GROUP_DOCUMENT),
-      m_customGroupBegin(false), m_customGroupEnd(false),
-      m_interaction(ERRORSTOPMODE)
-{
-    m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, interactive, true));
+    string fileName = bundle->get_mainfile_name();
+    shared_ptr<std::istream> file = bundle->get_file(fileName);
+    m_lexer = shared_ptr<Lexer>(new Lexer(fileName, file, false, true));
     init();
 }
 
@@ -829,7 +812,7 @@ Token::ptr Parser::peekToken(bool expand)
         if(!m_lexer->interactive()) {
             // Return the rest of the document as skipped tokens
             Token::ptr token;
-            while(token = rawNextToken(false)) {
+            while((token = rawNextToken(false))) {
                 token->setType(Token::TOK_SKIPPED);
                 m_tokenSource.push_back(token);
             }
@@ -937,29 +920,25 @@ void Parser::pushBack(vector< Token::ptr >* tokenVector)
     // NOTE: lastToken is NOT changed
 }
 
-void Parser::input(const string& fileName, const string& fullName)
-{
+void Parser::_inputStream(const string &fileName,
+                          const shared_ptr <std::istream> &istream) {
     // TODO: stop scaning genericText on file boundary
     // (for example \def\x{...} can't be spread across several files
-    shared_ptr<std::istream> istream(new std::ifstream(fullName.c_str()));
-    if(istream->fail()) {
+    if(!istream || istream->fail()) {
         logger()->log(Logger::ERROR,
-            "I can't find file `" + fileName + "'",
-            *this, lastToken());
+                      "I can't find file `" + fileName + "'",
+                      *this, lastToken());
 
         logger()->log(Logger::ERROR,
-            "Emergency stop",
-            *this, lastToken());
-
-        if(!ignoreEmergency())
-            end();
+                      "Emergency stop",
+                      *this, lastToken());
 
         return;
     }
 
     m_inputStack.push_back(std::make_pair(m_lexer, m_tokenQueue));
 
-    shared_ptr<Lexer> lexer(new Lexer(fullName, istream, false, true));
+    shared_ptr<Lexer> lexer(new Lexer(fileName, istream, false, true));
     lexer->setEndlinechar(m_lexer->endlinechar());
     for(int n=0; n<256; ++n) {
         lexer->assignCatCode(n, m_lexer->getCatCode(n));
@@ -967,8 +946,12 @@ void Parser::input(const string& fileName, const string& fullName)
 
     m_lexer = lexer;
     m_tokenQueue.clear();
+    logger()->log(Logger::MESSAGE, "(" + fileName, *this, lastToken());
+}
 
-    logger()->log(Logger::MESSAGE, "(" + fullName, *this, lastToken());
+void Parser::bundleInput(const string &fileName) {
+    shared_ptr<std::istream> istream = m_bundle->get_file(fileName);
+    _inputStream(fileName, istream);
 }
 
 void Parser::endinputNow()
@@ -1228,6 +1211,13 @@ Node::ptr Parser::parseOptionalSpaces()
     Node::ptr node(new Node("optional_spaces"));
     while(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
+    return node;
+}
+
+Node::ptr Parser::parseNewIf()
+{
+    Node::ptr node(new Node("newif"));
+    node->setValue(this->rawNextToken(false));
     return node;
 }
 
@@ -2026,7 +2016,7 @@ Node::ptr Parser::parseBalancedText(bool expand,
 
     int level = 0;
     Token::ptr token;
-    while(token = peekToken(expand)) {
+    while((token = peekToken(expand))) {
         if(token->isCharacterCat(Token::CC_BGROUP)) {
             ++level;
         } else if(token->isCharacterCat(Token::CC_EGROUP)) {
@@ -2134,7 +2124,7 @@ Node::ptr Parser::parseOptionalArgs()
         while(peekToken())
         {
             value += nextToken(&args->tokens())->value();
-            if(lastToken()->isCharacter('[')){
+            if(lastToken()->isCharacter(']')) {
                 break;
             }
         }
@@ -2208,7 +2198,7 @@ Node::ptr Parser::parseFileName()
     if(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
 
-    if(peekToken()->isCharacterCat(Token::CC_EGROUP)) // LaTeX fiture {...}
+    if(peekToken() && peekToken()->isCharacterCat(Token::CC_EGROUP)) // LaTeX fiture {...}
         nextToken(&node->tokens());
 
     node->setValue(fileName);
@@ -2268,9 +2258,9 @@ Node::ptr Parser::parseBibitem()
     if(helperIsImplicitCharacter(Token::CC_SPACE))
         nextToken(&node->tokens());
 
-    if(peekToken()->isCharacterCat(Token::CC_EGROUP)){
+    if(peekToken()->isCharacterCat(Token::CC_EGROUP)) {
         nextToken(&node->tokens());
-    }else{
+    } else {
         logger()->log(Logger::MESSAGE, "bracket } is missing", *this, peekToken());
     }
 
@@ -2626,7 +2616,7 @@ Node::ptr Parser::parse()
     // peekToken reports EOF. Lets add that tokens to the last node.
     Node::ptr node = document;
     while(node->childrenCount() > 0)
-        node = node->child(node->childrenCount()-1);
+        node = node->child(node->childrenCount() - 1);
 
     nextToken(&node->tokens());
 

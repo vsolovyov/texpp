@@ -61,11 +61,62 @@ public:
 
 }}*/
 
+using boost::python::wrapper;
+using boost::python::override;
+using boost::python::object;
+
+class BundleWrap : public texpp::Bundle, public wrapper<texpp::Bundle>
+{
+public:
+    std::string get_mainfile_name() {
+        override f = this->get_override("get_mainfile_name");
+        return f();
+    }
+
+    boost::shared_ptr<std::istream> get_file(const std::string& fname) {
+        override f = this->get_override("get_file");
+        return f(fname);
+    }
+
+    std::string get_bib_filename(const std::string& fname) {
+        override f = this->get_override("get_bib_filename");
+        return f(fname);
+    }
+
+    std::string get_tex_filename(const std::string& fname) {
+        override f = this->get_override("get_tex_filename");
+        return f(fname);
+    }
+};
+
+
+void export_bundle()
+{
+    using namespace boost::python;
+    using namespace texpp;
+    using boost::any;
+
+    scope scopeBundle = class_<BundleWrap,
+            boost::noncopyable >("Bundle", init<>())
+            .def("get_mainfile_name", pure_virtual(&Bundle::get_mainfile_name))
+            .def("get_file", pure_virtual(&Bundle::get_file))
+            .def("get_bib_filename", pure_virtual(&Bundle::get_bib_filename))
+            .def("get_tex_filename", pure_virtual(&Bundle::get_tex_filename))
+    ;
+}
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
     Node_treeRepr_overloads, treeRepr, 0, 1)
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
     Node_source_overloads, source, 0, 1)
+
+boost::python::tuple getValueTuple(texpp::Node::ptr& node)
+{
+    const std::pair<std::string, std::string> &nodeval = node->value(
+                std::make_pair(std::string(), std::string()));
+    return boost::python::make_tuple(nodeval.first, nodeval.second);
+}
 
 void export_node()
 {
@@ -74,7 +125,10 @@ void export_node()
 
     export_std_pair<string, Node::ptr>();
     export_std_pair<size_t, size_t>();
+    export_std_pair<string, string>();
     export_shared_ptr<string>();
+
+    def("getValueTuple", &getValueTuple);
 
     scope scopeNode = class_<Node, shared_ptr<Node> >(
             "Node", init<std::string>())
@@ -141,20 +195,13 @@ void export_parser()
     using boost::any;
 
     export_node();
+    export_bundle();
 
     scope scopeParser = class_<Parser, boost::noncopyable >("Parser",
-            init<std::string, shared_ptr<std::istream>,
-                 std::string, bool, bool, shared_ptr<Logger> >())
-        .def(init<std::string, shared_ptr<std::istream>, std::string, bool, bool>())
-        .def(init<std::string, shared_ptr<std::istream>, std::string, bool>())
-        .def(init<std::string, shared_ptr<std::istream>, std::string >())
-        .def(init<std::string, shared_ptr<std::istream> >())
+             init<shared_ptr<Bundle>, shared_ptr<Logger> >())
+        .def(init<shared_ptr<Bundle> >())
 
         .def("parse", &Parser::parse)
-
-        .def("workdir", &Parser::workdir,
-            return_value_policy<copy_const_reference>())
-        .def("setWorkdir", &Parser::setWorkdir)
 
         // Tokens
         .def("peekToken", &Parser::peekToken,
@@ -195,7 +242,7 @@ void export_parser()
         .def("beginCustomGroup", &Parser::beginCustomGroup)
         .def("endCustomGroup", &Parser::endCustomGroup)
 
-        .def("input", &Parser::input)
+        .def("bundleInput", &Parser::bundleInput)
 
         .def("end", &Parser::end)
         ;

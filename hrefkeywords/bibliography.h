@@ -68,7 +68,7 @@ void extractCitation(const Node::ptr node,
                      boost::shared_ptr<BibLib> bibliography,
                      std::string context);
 
-boost::python::dict extractCiteFreequency(const Node::ptr document);
+boost::python::dict extractCiteFrequency(const Node::ptr document);
 
 
 

@@ -1,3 +1,5 @@
-docker-deps
+docker-deps-py*
+build-py*
 results
-build
+.idea
+CMakeLists.txt

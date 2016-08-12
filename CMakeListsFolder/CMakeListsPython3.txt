@@ -26,7 +26,10 @@ if(NOT PYTHONLIBS_FOUND)
 endif(NOT PYTHONLIBS_FOUND)
 
 # Find Unicode libraries
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
+if(UNIX AND NOT APPLE)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
+    find_package(ICU 4.4 REQUIRED)
+endif(UNIX AND NOT APPLE)
 
 # Find tex executable (required for tests/tex and tests/hrefkeywords)
 find_program(TEX_EXECUTABLE "tex")
@@ -47,11 +50,13 @@ add_subdirectory(texpp)
 # originally boost_python_FOUND, but we have Python3
 if(Boost_FOUND)
     add_subdirectory(texpy)
-    add_subdirectory(hrefkeywords)
+    if(UNIX AND NOT APPLE)
+        add_subdirectory(hrefkeywords)
+    endif(UNIX AND NOT APPLE)
 endif(Boost_FOUND)
 
-if(BUILD_TESTING)
+if(BUILD_TESTING AND NOT APPLE)
     add_subdirectory(tests)
-endif(BUILD_TESTING)
+endif(BUILD_TESTING AND NOT APPLE)
 
 

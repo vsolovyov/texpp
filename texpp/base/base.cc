@@ -56,6 +56,7 @@ void initLaTeXstyle(Parser& parser)
     __TEXPP_SET_COMMAND("renewenvironment", Newenvironment);
 
     __TEXPP_SET_COMMAND("newtheorem", Newtheorem);
+    __TEXPP_SET_COMMAND("newif", Newif);
 
 #warning command redefinition \def \edef \gdef \xdef
     __TEXPP_SET_COMMAND("def", DefCommand);
@@ -67,6 +68,7 @@ void initLaTeXstyle(Parser& parser)
     __TEXPP_SET_COMMAND("documentstyle", Documentclass);
 
     __TEXPP_SET_COMMAND("input", InputCommand);
+    __TEXPP_SET_COMMAND("include", InputCommand);
 
     __TEXPP_SET_COMMAND("caption", CaptionCommand);
     __TEXPP_SET_COMMAND("includegraphics", ImageCommand);
@@ -74,6 +76,11 @@ void initLaTeXstyle(Parser& parser)
     // citation
     __TEXPP_SET_COMMAND("cite", Cite);
     __TEXPP_SET_COMMAND("bibitem", Bibliography);
+    __TEXPP_SET_COMMAND("bib", Bibliography);
+    __TEXPP_SET_COMMAND("reference", Bibliography);
+    __TEXPP_SET_COMMAND("newref", Bibliography);
+    __TEXPP_SET_COMMAND("astrobibitem", Bibliography);
+    __TEXPP_SET_COMMAND("harvarditem", Bibliography);
 
     Token::ptr mathToken(new Token(Token::TOK_CHARACTER, Token::CC_MATHSHIFT, "$"));
     parser.setSymbol("\\(", TokenCommand(mathToken));

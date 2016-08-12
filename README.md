@@ -110,3 +110,16 @@ Copy built libraries to the `/opt/texpp/` directory and register them in the sys
   sudo mv texpp.conf /etc/ld.so.conf.d/
   sudo ldconfig
 ```
+
+## macOS
+
+It's also possible to build this library under macOS. You need to install cmake,
+boost and boost-python.
+
+```brew install cmake
+  brew install boost
+  brew install boost-python --with-python3
+```
+
+After that everything you need is in Makefile, so you can type `make help` to
+find out what options do you have.

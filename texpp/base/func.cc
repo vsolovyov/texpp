@@ -345,7 +345,7 @@ bool UserMacro::expand(Parser& parser, shared_ptr<Node> node)
 
             int level = 0;
             Token::ptr token;
-            while(token = parser.peekToken(false)) {
+            while((token = parser.peekToken(false))) {
                 if(level == 0 && etoken &&
                         token->type() == etoken->type() &&
                         token->catCode() == etoken->catCode() &&

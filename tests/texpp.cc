@@ -22,15 +22,14 @@
 
 #include <texpp/parser.h>
 #include <texpp/logger.h>
+#include <tests/testbundle.h>
 
 int main(int argc, char** argv)
 {
     std::string fileName;
     std::istream *file;
-    bool interactive;
 
     if(argc >= 2) {
-        interactive = false;
         fileName = argv[1];
         file = new std::ifstream(argv[1], std::fstream::in);
         if(file->fail()) {
@@ -39,12 +38,13 @@ int main(int argc, char** argv)
             return 255;
         }
     } else {
-        interactive = true;
-        file = &std::cin;
+        std::cerr << "Need more arguments";
+        return 1;
     }
 
-    texpp::Parser parser(fileName, file, "", interactive, false,
-                    texpp::Logger::ptr(new texpp::ConsoleLogger));
+    texpp::Parser parser(boost::shared_ptr<texpp::Bundle>(
+            new TestBundle(fileName, boost::shared_ptr<std::istream>(file))),
+            texpp::Logger::ptr(new texpp::ConsoleLogger));
     texpp::Node::ptr document = parser.parse();
 
     if(file == &std::cin) {
