@@ -87,6 +87,10 @@ void extractCitation(const Node::ptr node,
         Node::ptr child = node->child(n);
 
         if(child->type() == "cite_item") {
+            if (child->tokens().size() == 0) {
+                continue;
+            }
+
             Token::ptr token = child->tokens()[0];
 
             citations->push_back(CiteInfo(child->valueString(),
