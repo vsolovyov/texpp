@@ -293,48 +293,6 @@ string normLiteral(string literal,
     return wStrToStr(nWLiteral);
 }
 
-string absolutePath(const string& initPath, const string& workDir)
-{
-    using boost::filesystem::path;
-
-    path ultiPath = path(initPath);
-    if(!ultiPath.is_absolute()) {
-// TODO: Check whether it work correctly
-//        if(!workDir.empty()) {      // if workdir is NOT empty
-//            path wd = path(workDir);
-//            if(!wd.is_absolute())    // if wokdir is NOT absolute
-//                // terminate wd, now wd is absolute path
-//                wd = boost::filesystem::current_path() / wd;
-//            ultiPath = wd / ultiPath;  // append work directory to the initial path
-//        } else {
-//            ultiPath = boost::filesystem::current_path() / ultiPath;
-//        }
-        path wd = workDir.empty() ? boost::filesystem::current_path() :
-                      path(workDir).is_absolute() ? path(workDir) :
-                             boost::filesystem::current_path() / path(workDir);
-        ultiPath = wd / ultiPath;
-    }
-
-    // path can contain repetitive sequences of path delimiters and "/../"
-    // expressions in path variable which mean "one directory up". So we need to
-    // normalize path. For example "/root/dir1///dir2/../dir3///file.ext" boils
-    // down to "/root/dir1/dir3/file.ext
-#warning normalize() method is deprecated and can be not maintained in feature \
-            versions of Boost library
-    string retString = ultiPath.normalize().string();
-    // somehow normalize() method add "/." at the end of string. Cut it:
-    if(retString.size() > 2 && 0==retString.compare(retString.size()-2, 2, "/."))
-        retString.resize(retString.size()-2);
-    return retString;
-}
-
-bool isLocalFile(const string& fileName, const string& workdir)
-{
-    string aWorkdir = absolutePath(workdir, string());
-    // if str include aWorkdir than return TRUE
-    return absolutePath(fileName, aWorkdir)
-            .compare(0, aWorkdir.size(), aWorkdir) == 0;
-}
 
 #define __PYTHON_NEXT(obj, iter) \
     object obj; \
@@ -402,8 +360,7 @@ void TextTagListPickeSuite::setstate(TextTagList& l, list state) {
 
 void _extractTextInfo(dict& result,
                       const Node::ptr node,
-                      const boost::regex& exclude_regex,
-                      const string& workdir)
+                      const boost::regex& exclude_regex)
 {
     size_t childrenCount = node->childrenCount();
 
@@ -411,8 +368,6 @@ void _extractTextInfo(dict& result,
         return;
     }
 
-    // [system path /] workdir
-    string aWorkdir = absolutePath(workdir, string());
     shared_ptr<string> lastFile;
     TextTagList* tags = 0;
     // for every child node
@@ -438,12 +393,10 @@ void _extractTextInfo(dict& result,
             if(child->isOneFile()) {
                 // get name of source file.
                 shared_ptr<string> fileName = child->oneFile();
-                if(fileName && (fileName == lastFile ||
-                            isLocalFile(*fileName, workdir))) {
+                if(fileName) {
                     if(fileName != lastFile || !tags) {
                         lastFile = fileName;
-                        string ffile = absolutePath(*fileName, aWorkdir)
-                                        .substr(aWorkdir.size()+1);
+                        string ffile = *fileName;
                         TextTagList& tl = extract<TextTagList&>(
                             result.setdefault(ffile, TextTagList()));
                         tags = &tl;
@@ -451,29 +404,29 @@ void _extractTextInfo(dict& result,
 
                     // fill the tags by TextTag info from the child node
                     std::pair<size_t, size_t> pos = child->sourcePos();
-                    tags->push_back(TextTag(type, pos.first, pos.second,
-                                                child->valueString()));
+                    tags->push_back(TextTag(type, pos.first, pos.second, child->valueString()));
                 }
             }
         } else if(child->type().compare(0, 12, "environment_") == 0 &&
                     !boost::regex_match(child->type(), exclude_regex)) {
             if (child->type().compare(12, 20, "abstract") == 0) {
-                std::pair<size_t, size_t> pos = child->sourcePos();
-                tags->push_back(TextTag(TextTag::TT_SECTION, pos.first,
-                                pos.second, "abstract"));
+                if(tags) {
+                    std::pair<size_t, size_t> pos = child->sourcePos();
+                    tags->push_back(
+                        TextTag(TextTag::TT_SECTION, pos.first, pos.second, "abstract"));
+                }
             }
-            _extractTextInfo(result, child, exclude_regex, workdir);
+            _extractTextInfo(result, child, exclude_regex);
             tags = 0;
         }
     }
 }
 
-dict extractTextInfo(const Node::ptr node, const string& exclude_regex,
-                const string& workdir)
+dict extractTextInfo(const Node::ptr node, const string& exclude_regex)
 {
     dict result;
     boost::regex rx(exclude_regex, boost::regex::extended);
-    _extractTextInfo(result, node, rx, workdir);
+    _extractTextInfo(result, node, rx);
     return result;
 }
 
@@ -656,8 +609,6 @@ BOOST_PYTHON_MODULE(_chrefliterals)
         .def("contains", &WordsDict::contains)
     ;
 
-    def("absolutePath", &absolutePath);
-    def("isLocalFile", &isLocalFile);
     def("normLiteral", &normLiteral);
     def("extractTextInfo", &extractTextInfo);
     def("getDocumentEncoding", &getDocumentEncoding);

@@ -255,12 +255,10 @@ struct TextTagListPickeSuite: pickle_suite
  */
 void _extractTextInfo(boost::python::dict& result,
                       const texpp::Node::ptr node,
-                      const boost::regex& exclude_regex,
-                      const std::string& workdir = std::string());
+                      const boost::regex& exclude_regex);
 
 dict extractTextInfo(const Node::ptr node,
-                     const string& exclude_regex,
-                     const string& workdir = string());
+                     const string& exclude_regex);
 
 /**
  * @brief getDocumentEncoding - extract document encoding from node
