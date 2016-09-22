@@ -14,11 +14,13 @@ endif
 
 ifeq ($(PYTHON_VER), 2)
   PYTHON_PREFIX=$(shell python-config --prefix)
+  PYTHON_CMD=python
 else
   PYTHON_PREFIX=$(shell python$(PYTHON_VER)-config --prefix)
+  PYTHON_CMD=python3
 endif
 
-.PHONY: docker-build-image linux-compile clean build version
+.PHONY: help docker-build-image linux-compile clean build version release
 
 help:
 	@echo "Use \`make <target>\` with one of targets (you can override python" \
@@ -46,13 +48,15 @@ build:
 			-DICU_ROOT_DIR=/usr/local/opt/icu4c \
 			-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) .. \
 		&& make
-	@mkdir -p $(RESULTS_DIR)
-	cp $(BUILD_DIR)/texpy/texpy.so $(RESULTS_DIR)
+	@mkdir -p $(RESULTS_DIR)/texpylib
+	touch $(RESULTS_DIR)/texpylib/__init__.py
+	cp $(BUILD_DIR)/texpy/texpy.so $(RESULTS_DIR)/texpylib
+	cd $(RESULTS_DIR) && $(PYTHON_CMD) ../../_setup.py bdist_wheel
 
 docker-build-image:
 	@mkdir -p $(DOCKER_DEPS)
 	cp Dockerfile-py$(PYTHON_VER) $(DOCKER_DEPS)/Dockerfile
-	cp -r CTestConfig.cmake FindICU.cmake linux-compile.sh hrefkeywords tests texpp texpy $(DOCKER_DEPS)
+	cp -r CTestConfig.cmake FindICU.cmake linux-compile.sh hrefkeywords tests texpp texpy _setup.py $(DOCKER_DEPS)
 	docker build -t $(CONTAINER_LABEL) $(DOCKER_DEPS)
 
 linux-compile:
