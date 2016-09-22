@@ -71,3 +71,20 @@ version:
 	@echo CONTAINER_LABEL=$(CONTAINER_LABEL)
 	@echo RESULTS_DIR=$(RESULTS_DIR)
 	@echo PYTHON_PREFIX=$(PYTHON_PREFIX)
+
+TAG ?= $(shell git describe --tags)
+release:
+	github-release release -u vsolovyov -r texpp -t "$(TAG)"
+	github-release upload -u vsolovyov -r texpp -t "$(TAG)" \
+						  -f "results/Linux-py2/texpy.so" \
+						  -n "texpy.linux-py2.so"
+	github-release upload -u vsolovyov -r texpp -t "$(TAG)" \
+						  -f "results/Linux-py2/_chrefliterals.so" \
+						  -n "_chrefliterals.linux-py2.so"
+
+	github-release upload -u vsolovyov -r texpp -t "$(TAG)" \
+						  -f "results/Darwin-py3/dist/texpy-$(TAG)-cp35-cp35m-macosx_10_11_x86_64.whl" \
+						  -n "texpy-$(TAG)-cp35-cp35m-macosx_10_11_x86_64.whl"
+	github-release upload -u vsolovyov -r texpp -t "$(TAG)" \
+						  -f "results/Linux-py3/texpy-$(TAG)-cp35-cp35m-linux_x86_64.whl" \
+						  -n "texpy-$(TAG)-cp35-cp35m-linux_x86_64.whl"
