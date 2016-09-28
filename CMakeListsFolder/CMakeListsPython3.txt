@@ -10,6 +10,7 @@ include(CTest)
 
 # Find boost libraries
 set(Boost_USE_MULTITHREADED ON)
+# needs re-check if all these components are really needed
 find_package(Boost 1.56.0 COMPONENTS system filesystem regex python3 REQUIRED)
 
 # Find python interpreter
@@ -24,12 +25,6 @@ find_package( PythonLibs 3.5  EXACT REQUIRED)
 if(NOT PYTHONLIBS_FOUND)
     message("python libraries NOT found - texpy and hrefkeywords will NOT be built.")
 endif(NOT PYTHONLIBS_FOUND)
-
-# Find Unicode libraries
-if(UNIX AND NOT APPLE)
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
-    find_package(ICU 4.4 REQUIRED)
-endif(UNIX AND NOT APPLE)
 
 # Find tex executable (required for tests/tex and tests/hrefkeywords)
 find_program(TEX_EXECUTABLE "tex")
@@ -50,7 +45,4 @@ add_subdirectory(texpp)
 # originally boost_python_FOUND, but we have Python3
 if(Boost_FOUND)
     add_subdirectory(texpy)
-    if(UNIX AND NOT APPLE)
-        add_subdirectory(hrefkeywords)
-    endif(UNIX AND NOT APPLE)
 endif(Boost_FOUND)

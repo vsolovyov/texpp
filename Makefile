@@ -1,6 +1,5 @@
 PYTHON_VER=2
 DOCKER_DEPS=docker-deps-py$(PYTHON_VER)
-CONTAINER_LABEL=texpp:python$(PYTHON_VER)
 
 ifeq ($(DEBUG), 1)
   BUILD_DIR=build-py$(PYTHON_VER)-debug
@@ -15,9 +14,11 @@ endif
 ifeq ($(PYTHON_VER), 2)
   PYTHON_PREFIX=$(shell python-config --prefix)
   PYTHON_CMD=python
+  CONTAINER_LABEL=texpp:python$(PYTHON_VER)
 else
   PYTHON_PREFIX=$(shell python$(PYTHON_VER)-config --prefix)
   PYTHON_CMD=python3
+  CONTAINER_LABEL=texpp:python$(PYTHON_VER)-alpine
 endif
 
 .PHONY: help docker-build-image linux-compile clean build version release
