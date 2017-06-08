@@ -1,5 +1,6 @@
 #!/bin/sh
 
+set -e
 cmake -DCMAKE_BUILD_TYPE=Release /code
 make
 cp texpy/texpy.so /results/

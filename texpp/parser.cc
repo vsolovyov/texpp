@@ -63,7 +63,7 @@ const texpp::string modeNames[] = {
 
 namespace texpp {
 
-string Parser::BANNER = "This is TeXpp, Version 2.4";
+string Parser::BANNER = "This is TeXpp, Version 2.4.1";
 
 using base::Dimen;
 

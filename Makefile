@@ -1,4 +1,4 @@
-PYTHON_VER=2
+PYTHON_VER=3
 DOCKER_DEPS=docker-deps-py$(PYTHON_VER)
 
 ifeq ($(DEBUG), 1)
@@ -18,7 +18,7 @@ ifeq ($(PYTHON_VER), 2)
 else
   PYTHON_PREFIX=$(shell python$(PYTHON_VER)-config --prefix)
   PYTHON_CMD=python3
-  CONTAINER_LABEL=texpp:python$(PYTHON_VER)-alpine
+  CONTAINER_LABEL=texpp:python$(PYTHON_VER)-ubuntu
 endif
 
 .PHONY: help docker-build-image linux-compile clean build version release
@@ -66,14 +66,15 @@ linux-compile:
 						--volume="$(CURDIR)/results/Linux-py$(PYTHON_VER):/results" \
 			$(CONTAINER_LABEL) /code/linux-compile.sh
 
+TAG ?= $(shell git describe --tags)
 version:
 	@echo PYTHON_VER=$(PYTHON_VER)
 	@echo BUILD_DIR=$(BUILD_DIR)
 	@echo CONTAINER_LABEL=$(CONTAINER_LABEL)
 	@echo RESULTS_DIR=$(RESULTS_DIR)
 	@echo PYTHON_PREFIX=$(PYTHON_PREFIX)
+	@echo TAG=$(TAG)
 
-TAG ?= $(shell git describe --tags)
 release:
 	github-release release -u vsolovyov -r texpp -t "$(TAG)"
 	github-release upload -u vsolovyov -r texpp -t "$(TAG)" \
